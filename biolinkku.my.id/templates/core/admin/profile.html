@@ -1,0 +1,681 @@
+{% extends 'core/admin/base.html' %}
+
+{% block title %}Profil Admin{% endblock %}
+{% block page_title %}Profil Admin{% endblock %}
+
+{% block content %}
+<div class="space-y-4 sm:space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col space-y-2">
+        <div>
+            <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Profil Admin</h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Kelola informasi akun admin dan keamanan.</p>
+        </div>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="p-4 sm:p-6">
+            <div class="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
+                <div class="flex-shrink-0">
+                    {% if site_settings.admin_photo %}
+                        <img src="{{ site_settings.admin_photo.url }}" alt="{{ site_settings.admin_name|default:user.username }}" class="h-16 w-16 sm:h-20 sm:w-20 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600">
+                    {% elif profile.photo %}
+                        <img src="{{ profile.photo.url }}" alt="{{ user.username }}" class="h-16 w-16 sm:h-20 sm:w-20 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600">
+                    {% else %}
+                        <div class="h-16 w-16 sm:h-20 sm:w-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white">
+                            <i class="fas fa-user text-xl sm:text-2xl"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="flex-1 text-center sm:text-left">
+                    <h3 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">{{ site_settings.admin_name|default:user.get_full_name|default:user.username }}</h3>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm sm:text-base">{{ user.email }}</p>
+                    {% if site_settings.admin_title %}
+                        <p class="text-sm text-blue-600 dark:text-blue-400 mt-1">
+                            <i class="fas fa-briefcase mr-1"></i>
+                            {{ site_settings.admin_title }}
+                        </p>
+                    {% endif %}
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <i class="fas fa-calendar mr-1"></i>
+                        Bergabung {{ user.date_joined|date:"d F Y" }}
+                    </p>
+                </div>
+                <div class="flex-shrink-0 w-full sm:w-auto">
+                    <a href="{% url 'admin_settings' %}" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white text-sm font-medium rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                        <i class="fas fa-edit mr-2"></i>
+                        Edit Profil
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <!-- Account Details -->
+        <div class="lg:col-span-2 space-y-4 sm:space-y-6">
+            <!-- Account Information -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="p-4 sm:p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                            <i class="fas fa-user-circle mr-2"></i>
+                            Informasi Akun
+                        </h3>
+                        <button onclick="openEditProfileModal()" class="self-start sm:self-auto text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium">
+                            <i class="fas fa-edit mr-1"></i>Edit
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
+                            <p class="text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-lg">{{ user.username }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                            <p class="text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-lg break-all">{{ user.email }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Lengkap</label>
+                            <p class="text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-lg">{{ site_settings.admin_name|default:user.get_full_name|default:"Belum diatur" }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+                            <span class="inline-flex items-center px-3 py-2 rounded-lg text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                {% if user.is_superuser %}Super Admin{% else %}Admin{% endif %}
+                            </span>
+                        </div>
+                        {% if site_settings.admin_title %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jabatan</label>
+                            <p class="text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-lg">{{ site_settings.admin_title }}</p>
+                        </div>
+                        {% endif %}
+                        {% if site_settings.admin_whatsapp %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">WhatsApp</label>
+                            <p class="text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-lg">{{ site_settings.admin_whatsapp }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security & Password -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="p-4 sm:p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                        <i class="fas fa-shield-alt mr-2"></i>
+                        Keamanan & Password
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Terakhir Login</label>
+                            <p class="text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-lg">
+                                {% if user.last_login %}
+                                    {{ user.last_login|date:"d F Y, H:i" }}
+                                {% else %}
+                                    Belum pernah login
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total Login</label>
+                            <div class="bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-lg">
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400">
+                                    <i class="fas fa-sign-in-alt mr-1"></i>
+                                    {{ profile.login_count|default:0 }} kali
+                                </span>
+                            </div>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+                            <div class="flex items-center justify-between bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-lg">
+                                <p class="text-sm text-gray-900 dark:text-white">••••••••••••</p>
+                                <button onclick="openChangePasswordModal()" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium ml-2">
+                                    <i class="fas fa-key mr-1"></i>Ubah Password
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="space-y-4 sm:space-y-6">
+            <!-- Account List -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="p-4 sm:p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                        <i class="fas fa-users mr-2"></i>
+                        Daftar Akun Admin
+                    </h3>
+                    <div class="space-y-3">
+                        {% for admin in admins %}
+                        <div class="flex items-center space-x-3 p-3 rounded-lg {% if admin.id == user.id %}bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800{% else %}bg-gray-50 dark:bg-gray-700{% endif %}">
+                            <div class="flex-shrink-0">
+                                {% if admin.profile and admin.profile.photo %}
+                                    <img src="{{ admin.profile.photo.url }}" alt="{{ admin.username }}" class="h-8 w-8 rounded-full object-cover">
+                                {% else %}
+                                    <div class="h-8 w-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs">
+                                        {{ admin.username|first|upper }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                    {{ admin.get_full_name|default:admin.username }}
+                                    {% if admin.id == user.id %}
+                                        <span class="text-xs text-blue-600 dark:text-blue-400">(Anda)</span>
+                                    {% endif %}
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ admin.email }}</p>
+                            </div>
+                            <div class="flex-shrink-0 flex items-center space-x-2">
+                                {% if admin.is_superuser %}
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400">
+                                        <i class="fas fa-crown mr-1"></i>Super
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-900/20 text-gray-800 dark:text-gray-400">
+                                        Admin
+                                    </span>
+                                {% endif %}
+                                
+                                <!-- Action buttons -->
+                                {% if admin.id != user.id %}
+                                <div class="flex items-center space-x-1">
+                                    <button onclick="openChangeAdminPasswordModal({{ admin.id }}, '{{ admin.username }}')" 
+                                            class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 p-1 rounded transition-colors" 
+                                            title="Ganti Password">
+                                        <i class="fas fa-key text-xs"></i>
+                                    </button>
+                                    <button onclick="openDeleteAdminModal({{ admin.id }}, '{{ admin.username }}')" 
+                                            class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 p-1 rounded transition-colors" 
+                                            title="Hapus Admin">
+                                        <i class="fas fa-trash text-xs"></i>
+                                    </button>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-4">
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Tidak ada admin ditemukan</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Description -->
+    {% if site_settings.admin_description %}
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="p-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                <i class="fas fa-user-edit mr-2"></i>
+                Tentang Admin
+            </h3>
+            <p class="text-gray-700 dark:text-gray-300 leading-relaxed">{{ site_settings.admin_description }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Stats -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="p-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                <i class="fas fa-chart-bar mr-2"></i>
+                Statistik Cepat
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ services_count|default:0 }}</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Layanan</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ products_count|default:0 }}</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Produk</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ social_media_count|default:0 }}</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Media Sosial</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ whatsapp_count|default:0 }}</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Template WA</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div id="editProfileModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-md mx-4 sm:mx-auto max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Edit Profil</h3>
+            <button onclick="closeEditProfileModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <form id="editProfileForm" class="p-4 sm:p-6 space-y-4">
+            {% csrf_token %}
+            
+            <div>
+                <label for="edit_username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <i class="fas fa-user mr-2"></i>Username *
+                </label>
+                <input type="text" id="edit_username" name="username" value="{{ user.username }}" required
+                       class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base">
+            </div>
+            
+            <div>
+                <label for="edit_email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <i class="fas fa-envelope mr-2"></i>Email *
+                </label>
+                <input type="email" id="edit_email" name="email" value="{{ user.email }}" required
+                       class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base">
+            </div>
+            
+            <div class="flex flex-col sm:flex-row items-center justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4">
+                <button type="button" onclick="closeEditProfileModal()" class="w-full sm:w-auto px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors text-sm sm:text-base">
+                    Batal
+                </button>
+                <button type="submit" class="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base">
+                    <i class="fas fa-save mr-2"></i>
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div id="changePasswordModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-md mx-4 sm:mx-auto max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Ubah Password</h3>
+            <button onclick="closeChangePasswordModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <form id="changePasswordForm" class="p-4 sm:p-6 space-y-4">
+            {% csrf_token %}
+            
+            <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-4">
+                <div class="flex items-start">
+                    <i class="fas fa-info-circle text-yellow-600 dark:text-yellow-400 mt-0.5 mr-2"></i>
+                    <div class="text-sm text-yellow-800 dark:text-yellow-200">
+                        <p class="font-medium mb-1">Ketentuan Password:</p>
+                        <ul class="list-disc list-inside space-y-1 text-xs">
+                            <li>Minimal 6 karakter</li>
+                            <li>Tidak perlu memasukkan password lama</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <label for="new_password1" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <i class="fas fa-key mr-2"></i>Password Baru *
+                </label>
+                <input type="password" id="new_password1" name="new_password1" required
+                       class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                       placeholder="Minimal 6 karakter">
+            </div>
+            
+            <div>
+                <label for="new_password2" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <i class="fas fa-key mr-2"></i>Konfirmasi Password Baru *
+                </label>
+                <input type="password" id="new_password2" name="new_password2" required
+                       class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                       placeholder="Ulangi password baru">
+            </div>
+            
+            <div class="flex flex-col sm:flex-row items-center justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4">
+                <button type="button" onclick="closeChangePasswordModal()" class="w-full sm:w-auto px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors text-sm sm:text-base">
+                    Batal
+                </button>
+                <button type="submit" class="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base">
+                    <i class="fas fa-save mr-2"></i>
+                    Ubah Password
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Change Admin Password Modal -->
+<div id="changeAdminPasswordModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-md mx-4 sm:mx-auto max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Ganti Password Admin</h3>
+            <button onclick="closeChangeAdminPasswordModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <form id="changeAdminPasswordForm" class="p-4 sm:p-6 space-y-4">
+            {% csrf_token %}
+            <input type="hidden" id="admin_id" name="admin_id">
+            
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle text-blue-600 dark:text-blue-400 mr-2"></i>
+                    <div class="text-sm text-blue-800 dark:text-blue-300">
+                        <p class="font-medium mb-1">Informasi Password:</p>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>Minimal 6 karakter</li>
+                            <li>Password akan diubah untuk admin: <span id="admin_username_display" class="font-semibold"></span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <label for="admin_new_password1" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <i class="fas fa-key mr-2"></i>Password Baru *
+                </label>
+                <input type="password" id="admin_new_password1" name="new_password1" required
+                       class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                       placeholder="Minimal 6 karakter">
+            </div>
+            
+            <div>
+                <label for="admin_new_password2" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <i class="fas fa-key mr-2"></i>Konfirmasi Password Baru *
+                </label>
+                <input type="password" id="admin_new_password2" name="new_password2" required
+                       class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                       placeholder="Ulangi password baru">
+            </div>
+            
+            <div class="flex flex-col sm:flex-row items-center justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4">
+                <button type="button" onclick="closeChangeAdminPasswordModal()" class="w-full sm:w-auto px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors text-sm sm:text-base">
+                    Batal
+                </button>
+                <button type="submit" class="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base">
+                    <i class="fas fa-save mr-2"></i>
+                    Ubah Password
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Admin Modal -->
+<div id="deleteAdminModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-md mx-4 sm:mx-auto">
+        <div class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Hapus Admin</h3>
+            <button onclick="closeDeleteAdminModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <div class="p-4 sm:p-6">
+            <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 mr-2"></i>
+                    <div class="text-sm text-red-800 dark:text-red-300">
+                        <p class="font-medium mb-1">Peringatan!</p>
+                        <p>Anda akan menghapus admin: <span id="delete_admin_username_display" class="font-semibold"></span></p>
+                        <p class="mt-1">Tindakan ini tidak dapat dibatalkan.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <form id="deleteAdminForm">
+                {% csrf_token %}
+                <input type="hidden" id="delete_admin_id" name="admin_id">
+                
+                <div class="flex flex-col sm:flex-row items-center justify-end space-y-2 sm:space-y-0 sm:space-x-3">
+                    <button type="button" onclick="closeDeleteAdminModal()" class="w-full sm:w-auto px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors text-sm sm:text-base">
+                        Batal
+                    </button>
+                    <button type="submit" class="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base">
+                        <i class="fas fa-trash mr-2"></i>
+                        Hapus Admin
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function openEditProfileModal() {
+        openModal('editProfileModal');
+    }
+    
+    function closeEditProfileModal() {
+        closeModal('editProfileModal');
+        document.getElementById('editProfileForm').reset();
+        // Reset form values to original
+        document.getElementById('edit_username').value = '{{ user.username }}';
+        document.getElementById('edit_email').value = '{{ user.email }}';
+    }
+    
+    function openChangePasswordModal() {
+        openModal('changePasswordModal');
+    }
+    
+    function closeChangePasswordModal() {
+        closeModal('changePasswordModal');
+        document.getElementById('changePasswordForm').reset();
+    }
+    
+    // Edit Profile Form submission
+    document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        showLoading();
+        fetch('/eka/update-profile/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.status === 'success') {
+                alert('Profil berhasil diperbarui!');
+                closeEditProfileModal();
+                // Reload page to show updated data
+                window.location.reload();
+            } else {
+                if (data.errors) {
+                    let errorMessage = 'Terjadi kesalahan:\n';
+                    for (const [field, errors] of Object.entries(data.errors)) {
+                        errorMessage += `${field}: ${errors.join(', ')}\n`;
+                    }
+                    alert(errorMessage);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat memperbarui profil.');
+        });
+    });
+    
+    // Change Password Form submission
+    document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        showLoading();
+        fetch('/eka/change-password/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.status === 'success') {
+                alert('Password berhasil diubah!');
+                closeChangePasswordModal();
+            } else {
+                if (data.errors) {
+                    let errorMessage = 'Terjadi kesalahan:\n';
+                    for (const [field, errors] of Object.entries(data.errors)) {
+                        errorMessage += `${field}: ${errors.join(', ')}\n`;
+                    }
+                    alert(errorMessage);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat mengubah password.');
+        });
+    });
+    
+    // Admin management functions
+    function openChangeAdminPasswordModal(adminId, username) {
+        document.getElementById('admin_id').value = adminId;
+        document.getElementById('admin_username_display').textContent = username;
+        openModal('changeAdminPasswordModal');
+    }
+    
+    function closeChangeAdminPasswordModal() {
+        closeModal('changeAdminPasswordModal');
+        document.getElementById('changeAdminPasswordForm').reset();
+    }
+    
+    function openDeleteAdminModal(adminId, username) {
+        document.getElementById('delete_admin_id').value = adminId;
+        document.getElementById('delete_admin_username_display').textContent = username;
+        openModal('deleteAdminModal');
+    }
+    
+    function closeDeleteAdminModal() {
+        closeModal('deleteAdminModal');
+        document.getElementById('deleteAdminForm').reset();
+    }
+    
+    // Change Admin Password Form submission
+    document.getElementById('changeAdminPasswordForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        showLoading();
+        fetch('/eka/admin-change-password/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.status === 'success') {
+                alert('Password admin berhasil diubah!');
+                closeChangeAdminPasswordModal();
+            } else {
+                if (data.errors) {
+                    let errorMessage = 'Error:\n';
+                    for (let field in data.errors) {
+                        errorMessage += data.errors[field].join('\n') + '\n';
+                    }
+                    alert(errorMessage);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat mengubah password admin.');
+        });
+    });
+    
+    // Delete Admin Form submission
+    document.getElementById('deleteAdminForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        showLoading();
+        fetch('/eka/admin-delete/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.status === 'success') {
+                alert('Admin berhasil dihapus!');
+                closeDeleteAdminModal();
+                // Reload page to update admin list
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat menghapus admin.');
+        });
+    });
+    
+    // Close modals when clicking outside
+    document.getElementById('editProfileModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeEditProfileModal();
+        }
+    });
+    
+    document.getElementById('changePasswordModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeChangePasswordModal();
+        }
+    });
+    
+    document.getElementById('changeAdminPasswordModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeChangeAdminPasswordModal();
+        }
+    });
+    
+    document.getElementById('deleteAdminModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDeleteAdminModal();
+        }
+    });
+</script>
+{% endblock %}

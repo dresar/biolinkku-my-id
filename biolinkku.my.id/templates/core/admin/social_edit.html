@@ -1,0 +1,267 @@
+{% extends 'core/admin/base.html' %}
+
+{% block title %}Edit Media Sosial{% endblock %}
+{% block page_title %}Edit Media Sosial{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Edit Media Sosial</h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Edit informasi media sosial yang ditampilkan di bio link Anda.</p>
+        </div>
+        <div class="mt-4 sm:mt-0">
+            <a href="{% url 'admin_social_list' %}" class="inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white text-sm font-medium rounded-lg transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Kembali ke Daftar
+            </a>
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Edit Media Sosial</h3>
+        </div>
+        
+        <form id="socialForm" class="p-6 space-y-6" method="post">
+            {% csrf_token %}
+            <input type="hidden" id="socialId" name="id" value="{{ social.id }}">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="platform" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-globe mr-2"></i>Platform *
+                    </label>
+                    <select id="platform" name="platform" required onchange="updateIcon()"
+                            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="">Pilih Platform</option>
+                        <option value="instagram" data-icon="fab fa-instagram" {% if social.platform == 'instagram' %}selected{% endif %}>Instagram</option>
+                        <option value="tiktok" data-icon="fab fa-tiktok" {% if social.platform == 'tiktok' %}selected{% endif %}>TikTok</option>
+                        <option value="github" data-icon="fab fa-github" {% if social.platform == 'github' %}selected{% endif %}>GitHub</option>
+                        <option value="saweria" data-icon="fas fa-heart" {% if social.platform == 'saweria' %}selected{% endif %}>Saweria</option>
+                        <option value="email" data-icon="fas fa-envelope" {% if social.platform == 'email' %}selected{% endif %}>Email</option>
+                        <option value="whatsapp" data-icon="fab fa-whatsapp" {% if social.platform == 'whatsapp' %}selected{% endif %}>WhatsApp</option>
+                        <option value="facebook" data-icon="fab fa-facebook" {% if social.platform == 'facebook' %}selected{% endif %}>Facebook</option>
+                        <option value="twitter" data-icon="fab fa-twitter" {% if social.platform == 'twitter' %}selected{% endif %}>Twitter</option>
+                        <option value="linkedin" data-icon="fab fa-linkedin" {% if social.platform == 'linkedin' %}selected{% endif %}>LinkedIn</option>
+                        <option value="youtube" data-icon="fab fa-youtube" {% if social.platform == 'youtube' %}selected{% endif %}>YouTube</option>
+                        <option value="telegram" data-icon="fab fa-telegram" {% if social.platform == 'telegram' %}selected{% endif %}>Telegram</option>
+                        <option value="discord" data-icon="fab fa-discord" {% if social.platform == 'discord' %}selected{% endif %}>Discord</option>
+                        <option value="pinterest" data-icon="fab fa-pinterest" {% if social.platform == 'pinterest' %}selected{% endif %}>Pinterest</option>
+                        <option value="snapchat" data-icon="fab fa-snapchat" {% if social.platform == 'snapchat' %}selected{% endif %}>Snapchat</option>
+                        <option value="twitch" data-icon="fab fa-twitch" {% if social.platform == 'twitch' %}selected{% endif %}>Twitch</option>
+                        <option value="reddit" data-icon="fab fa-reddit" {% if social.platform == 'reddit' %}selected{% endif %}>Reddit</option>
+                        <option value="medium" data-icon="fab fa-medium" {% if social.platform == 'medium' %}selected{% endif %}>Medium</option>
+                        <option value="behance" data-icon="fab fa-behance" {% if social.platform == 'behance' %}selected{% endif %}>Behance</option>
+                        <option value="dribbble" data-icon="fab fa-dribbble" {% if social.platform == 'dribbble' %}selected{% endif %}>Dribbble</option>
+                        <option value="website" data-icon="fas fa-globe" {% if social.platform == 'website' %}selected{% endif %}>Website</option>
+                        <option value="other" data-icon="fas fa-link" {% if social.platform == 'other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-user mr-2"></i>Username/Nama *
+                    </label>
+                    <input type="text" id="username" name="username" required value="{{ social.username }}"
+                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                           placeholder="Masukkan username atau nama">
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label for="link" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-link mr-2"></i>Link/URL *
+                    </label>
+                    <input type="url" id="link" name="link" required value="{{ social.link }}"
+                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                           placeholder="https://example.com/username">
+                </div>
+                
+                <div>
+                    <label for="icon" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-icons mr-2"></i>Icon Class *
+                    </label>
+                    <div class="relative">
+                        <input type="text" id="icon" name="icon" required value="{{ social.icon }}"
+                               class="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                               placeholder="fab fa-instagram">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <i id="iconPreview" class="{{ social.icon }} text-gray-400 text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Font Awesome class (contoh: fab fa-instagram)</p>
+                </div>
+                
+                <div>
+                    <label for="order" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-sort-numeric-up mr-2"></i>Urutan
+                    </label>
+                    <input type="number" id="order" name="order" value="{{ social.order }}" min="0"
+                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-align-left mr-2"></i>Deskripsi (Opsional)
+                    </label>
+                    <textarea id="description" name="description" rows="3"
+                              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                              placeholder="Deskripsi singkat tentang akun ini">{{ social.description }}</textarea>
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="is_active" name="is_active" {% if social.is_active %}checked{% endif %}
+                               class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700">
+                        <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-toggle-on mr-2"></i>Aktif
+                        </span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Preview Card -->
+            <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Preview:</h4>
+                <div id="previewCard" class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="h-10 w-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white">
+                            <i id="previewIcon" class="{{ social.icon }}"></i>
+                        </div>
+                        <div>
+                            <div id="previewPlatform" class="font-medium text-gray-900 dark:text-white">{{ social.get_platform_display }}</div>
+                            <div id="previewUsername" class="text-sm text-gray-600 dark:text-gray-400">@{{ social.username }}</div>
+                        </div>
+                    </div>
+                    <div id="previewDescription" class="mt-2 text-sm text-gray-600 dark:text-gray-400 {% if not social.description %}hidden{% endif %}">{{ social.description }}</div>
+                </div>
+            </div>
+            
+            <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <a href="{% url 'admin_social_list' %}" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                    Batal
+                </a>
+                <button type="submit" class="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                    <i class="fas fa-save mr-2"></i>
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function updateIcon() {
+        const platformSelect = document.getElementById('platform');
+        const iconInput = document.getElementById('icon');
+        const iconPreview = document.getElementById('iconPreview');
+        const previewIcon = document.getElementById('previewIcon');
+        
+        const selectedOption = platformSelect.options[platformSelect.selectedIndex];
+        const iconClass = selectedOption.getAttribute('data-icon');
+        
+        if (iconClass) {
+            iconInput.value = iconClass;
+            iconPreview.className = iconClass + ' text-gray-400 text-xl';
+            previewIcon.className = iconClass;
+        }
+        
+        updatePreview();
+    }
+    
+    function updatePreview() {
+        const platform = document.getElementById('platform');
+        const username = document.getElementById('username').value;
+        const description = document.getElementById('description').value;
+        const icon = document.getElementById('icon').value;
+        
+        const previewPlatform = document.getElementById('previewPlatform');
+        const previewUsername = document.getElementById('previewUsername');
+        const previewDescription = document.getElementById('previewDescription');
+        const previewIcon = document.getElementById('previewIcon');
+        
+        previewPlatform.textContent = platform.options[platform.selectedIndex].text || 'Platform';
+        previewUsername.textContent = username ? '@' + username : '@username';
+        
+        if (description) {
+            previewDescription.textContent = description;
+            previewDescription.classList.remove('hidden');
+        } else {
+            previewDescription.classList.add('hidden');
+        }
+        
+        if (icon) {
+            previewIcon.className = icon;
+        }
+    }
+    
+    // Form submission
+    document.getElementById('socialForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const url = `/eka/social/edit/{{ social.id }}/`;
+        
+        showLoading();
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCSRFToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                // Show success toast
+                showToast('success', 'Media sosial berhasil diperbarui');
+                
+                // Redirect after a short delay
+                setTimeout(() => {
+                    window.location.href = '{% url "admin_social_list" %}';
+                }, 1500);
+            } else {
+                if (data.errors) {
+                    let errorMessage = 'Terjadi kesalahan:\n';
+                    for (const [field, errors] of Object.entries(data.errors)) {
+                        errorMessage += `${field}: ${errors.join(', ')}\n`;
+                    }
+                    showToast('error', errorMessage);
+                } else {
+                    showToast('error', data.message || 'Terjadi kesalahan saat menyimpan media sosial');
+                }
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            showToast('error', 'Terjadi kesalahan saat menyimpan media sosial');
+        });
+    });
+    
+    // Real-time preview updates
+    document.getElementById('username').addEventListener('input', updatePreview);
+    document.getElementById('description').addEventListener('input', updatePreview);
+    document.getElementById('icon').addEventListener('input', function() {
+        const iconPreview = document.getElementById('iconPreview');
+        const previewIcon = document.getElementById('previewIcon');
+        const iconClass = this.value;
+        
+        if (iconClass) {
+            iconPreview.className = iconClass + ' text-gray-400 text-xl';
+            previewIcon.className = iconClass;
+        }
+        
+        updatePreview();
+    });
+    
+    // Initialize preview on page load
+    updatePreview();
+</script>
+{% endblock %}

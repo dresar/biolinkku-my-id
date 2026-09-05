@@ -1,0 +1,243 @@
+{% extends 'core/admin/base.html' %}
+
+{% block title %}Edit Template WhatsApp{% endblock %}
+{% block page_title %}Edit Template WhatsApp{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Edit Template WhatsApp</h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Edit template pesan WhatsApp untuk berbagai keperluan.</p>
+        </div>
+        <div class="mt-4 sm:mt-0">
+            <a href="{% url 'admin_whatsapp_list' %}" class="inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white text-sm font-medium rounded-lg transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Kembali ke Daftar
+            </a>
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Edit Template WhatsApp</h3>
+        </div>
+        
+        <form id="templateForm" class="p-6 space-y-6" method="post">
+            {% csrf_token %}
+            <input type="hidden" id="templateId" name="id" value="{{ template.id }}">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Left Column -->
+                <div class="space-y-6">
+                    <div>
+                        <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-heading mr-2"></i>Judul Template *
+                        </label>
+                        <input type="text" id="title" name="title" required value="{{ template.title }}"
+                               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                               placeholder="Masukkan judul template">
+                    </div>
+                    
+                    <div>
+                        <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-tag mr-2"></i>Kategori *
+                        </label>
+                        <select id="category" name="category" required
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <option value="">Pilih Kategori</option>
+                            <option value="greeting" {% if template.category == 'greeting' %}selected{% endif %}>Salam & Sapaan</option>
+                            <option value="business" {% if template.category == 'business' %}selected{% endif %}>Bisnis & Promosi</option>
+                            <option value="invitation" {% if template.category == 'invitation' %}selected{% endif %}>Undangan</option>
+                            <option value="thank_you" {% if template.category == 'thank_you' %}selected{% endif %}>Ucapan Terima Kasih</option>
+                            <option value="apology" {% if template.category == 'apology' %}selected{% endif %}>Permintaan Maaf</option>
+                            <option value="reminder" {% if template.category == 'reminder' %}selected{% endif %}>Pengingat</option>
+                            <option value="congratulation" {% if template.category == 'congratulation' %}selected{% endif %}>Ucapan Selamat</option>
+                            <option value="holiday" {% if template.category == 'holiday' %}selected{% endif %}>Hari Raya & Libur</option>
+                            <option value="birthday" {% if template.category == 'birthday' %}selected{% endif %}>Ulang Tahun</option>
+                            <option value="motivational" {% if template.category == 'motivational' %}selected{% endif %}>Motivasi & Inspirasi</option>
+                            <option value="announcement" {% if template.category == 'announcement' %}selected{% endif %}>Pengumuman</option>
+                            <option value="follow_up" {% if template.category == 'follow_up' %}selected{% endif %}>Follow Up</option>
+                            <option value="other" {% if template.category == 'other' %}selected{% endif %}>Lainnya</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-align-left mr-2"></i>Deskripsi (Opsional)
+                        </label>
+                        <textarea id="description" name="description" rows="3"
+                                  class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                  placeholder="Deskripsi singkat tentang template ini">{{ template.description }}</textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="order" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-sort-numeric-up mr-2"></i>Urutan
+                            </label>
+                            <input type="number" id="order" name="order" value="{{ template.order }}" min="0"
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        </div>
+                        
+                        <div class="flex items-end">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="is_active" name="is_active" {% if template.is_active %}checked{% endif %}
+                                       class="rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500 dark:bg-gray-700">
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                                    <i class="fas fa-toggle-on mr-2"></i>Aktif
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div class="space-y-6">
+                    <div>
+                        <label for="message" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fab fa-whatsapp mr-2"></i>Pesan Template *
+                        </label>
+                        <textarea id="message" name="message" rows="12" required
+                                  class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                  placeholder="Tulis pesan template WhatsApp di sini...">{{ template.message }}</textarea>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Tips: Gunakan variabel seperti {nama}, {tanggal}, {produk} untuk personalisasi
+                        </p>
+                    </div>
+                    
+                    <!-- Preview -->
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                            <i class="fas fa-eye mr-2"></i>Preview WhatsApp:
+                        </h4>
+                        <div class="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                            <div class="flex items-start space-x-2">
+                                <div class="h-8 w-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm">
+                                    <i class="fab fa-whatsapp"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="bg-green-100 dark:bg-green-900/20 rounded-lg p-3">
+                                        <div id="messagePreview" class="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+                                            {{ template.message }}
+                                        </div>
+                                    </div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        Sekarang
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <a href="{% url 'admin_whatsapp_list' %}" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                    Batal
+                </a>
+                <button type="submit" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+                    <i class="fas fa-save mr-2"></i>
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let messageEditor = null;
+    
+    // Initialize CKEditor when document is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeCKEditor('message', {
+            toolbar: ['bold', 'italic', '|', 'bulletedList', 'numberedList', '|', 'link', '|', 'undo', 'redo']
+        }).then(editor => {
+            messageEditor = editor;
+            
+            // Update preview when content changes
+            editor.model.document.on('change:data', () => {
+                updateMessagePreview();
+            });
+        }).catch(error => {
+            console.error('Error initializing CKEditor:', error);
+            // Fallback to regular textarea
+            document.getElementById('message').addEventListener('input', updateMessagePreview);
+        });
+    });
+    
+    function updateMessagePreview() {
+        const messagePreview = document.getElementById('messagePreview');
+        let content = '';
+        
+        if (messageEditor) {
+            content = messageEditor.getData().replace(/<[^>]*>/g, ''); // Strip HTML tags
+        } else {
+            content = document.getElementById('message').value;
+        }
+        
+        messagePreview.textContent = content || 'Tulis pesan untuk melihat preview...';
+    }
+    
+    // Form submission
+    document.getElementById('templateForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        // Add CKEditor content
+        if (messageEditor) {
+            formData.set('message', messageEditor.getData());
+        }
+        
+        const url = `/eka/whatsapp/edit/{{ template.id }}/`;
+        
+        showLoading();
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCSRFToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                // Show success toast
+                showToast('success', 'Template WhatsApp berhasil diperbarui');
+                
+                // Redirect after a short delay
+                setTimeout(() => {
+                    window.location.href = '{% url "admin_whatsapp_list" %}';
+                }, 1500);
+            } else {
+                if (data.errors) {
+                    let errorMessage = 'Terjadi kesalahan:\n';
+                    for (const [field, errors] of Object.entries(data.errors)) {
+                        errorMessage += `${field}: ${errors.join(', ')}\n`;
+                    }
+                    showToast('error', errorMessage);
+                } else {
+                    showToast('error', data.message || 'Terjadi kesalahan saat menyimpan template');
+                }
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            showToast('error', 'Terjadi kesalahan saat menyimpan template');
+        });
+    });
+    
+    // Initialize message preview
+    updateMessagePreview();
+</script>
+{% endblock %}

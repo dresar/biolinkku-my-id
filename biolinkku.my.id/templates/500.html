@@ -1,0 +1,251 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 - Kesalahan Server</title>
+    
+    <!-- Favicon -->
+    {% if site_settings.site_favicon %}
+    <link rel="icon" type="image/x-icon" href="{{ site_settings.site_favicon.url }}">
+    {% else %}
+    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+    {% endif %}
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="{% static 'fontawesomefree/css/all.min.css' %}">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/particles.css' %}">
+    
+    <style>
+        .error-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+        .error-number {
+            font-size: 8rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #dc3545, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        .error-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #fff;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+        .error-description {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: rgba(255, 255, 255, 0.8);
+            max-width: 600px;
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+        .error-actions {
+            animation: fadeInUp 1s ease-out 0.9s both;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            margin: 0 10px;
+            background: linear-gradient(45deg, var(--accent-color, #4a90e2), #6610f2);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        .error-image {
+            margin: 2rem 0;
+            animation: shake 2s ease-in-out infinite;
+        }
+        .error-image svg {
+            max-width: 300px;
+            height: auto;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 20px rgba(220, 53, 69, 0.5); }
+            to { text-shadow: 0 0 30px rgba(220, 53, 69, 0.8), 0 0 40px rgba(255, 107, 107, 0.5); }
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particle Background -->
+    <div id="particles-js"></div>
+    
+    <!-- Error Container -->
+    <div class="error-container">
+        <div class="error-number">500</div>
+        <h1 class="error-title">Kesalahan Server</h1>
+        <p class="error-description">Maaf, terjadi kesalahan pada server. Tim kami sedang bekerja untuk memperbaikinya. Silakan coba lagi dalam beberapa saat.</p>
+        
+        <div class="error-image">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="300" height="300">
+                <circle cx="250" cy="250" r="200" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
+                <path d="M250 150 A50 50 0 1 0 250 250 A50 50 0 1 0 250 150" fill="none" stroke="rgba(220, 53, 69, 0.8)" stroke-width="8">
+                    <animate attributeName="stroke-dasharray" values="0 314;157 157;314 0;157 157;0 314" dur="2s" repeatCount="indefinite"/>
+                </path>
+                <path d="M175 320 C175 320, 200 280, 250 280 C300 280, 325 320, 325 320" fill="none" stroke="rgba(220, 53, 69, 0.8)" stroke-width="8" stroke-linecap="round"/>
+                <circle cx="200" cy="200" r="15" fill="#dc3545">
+                    <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="300" cy="200" r="15" fill="#dc3545">
+                    <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite" begin="0.5s"/>
+                </circle>
+                <text x="250" y="210" text-anchor="middle" fill="#dc3545" font-size="36" font-family="Arial, sans-serif" font-weight="bold">
+                    <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite"/>
+                    !
+                </text>
+                <g transform="translate(220, 350)">
+                    <rect x="0" y="0" width="60" height="8" fill="rgba(220, 53, 69, 0.3)" rx="4">
+                        <animate attributeName="width" values="0;60;0" dur="3s" repeatCount="indefinite"/>
+                    </rect>
+                    <text x="30" y="25" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="12" font-family="Arial, sans-serif">Memproses...</text>
+                </g>
+            </svg>
+        </div>
+        
+        <div class="error-actions">
+            <a href="/" class="btn">Kembali ke Beranda</a>
+        </div>
+    </div>
+    
+    <!-- Color Theme Switcher -->
+    <div class="color-switcher">
+        <div class="palette-toggle" id="paletteToggle">
+            <i class="fas fa-palette"></i>
+        </div>
+        <div class="color-palette" id="colorPalette">
+            <div class="color-option" data-theme="purple" style="background: linear-gradient(45deg, #1a1a2e 0%, #0f3460 100%)"></div>
+            <div class="color-option" data-theme="blue" style="background: linear-gradient(45deg, #0c1445 0%, #2a5298 100%)"></div>
+            <div class="color-option" data-theme="green" style="background: linear-gradient(45deg, #0d1b2a 0%, #2d5016 100%)"></div>
+            <div class="color-option" data-theme="orange" style="background: linear-gradient(45deg, #2d1b0d 0%, #8b4513 100%)"></div>
+            <div class="color-option" data-theme="red" style="background: linear-gradient(45deg, #2d0a0a 0%, #8b2635 100%)"></div>
+            <div class="color-option" data-theme="pink" style="background: linear-gradient(45deg, #2d0a1f 0%, #8b2653 100%)"></div>
+        </div>
+    </div>
+    
+    <!-- Particles.js -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        // Theme colors
+        const themes = {
+            purple: {
+                primary: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+                accent: '#4a90e2'
+            },
+            blue: {
+                primary: 'linear-gradient(135deg, #0c1445 0%, #1e3c72 50%, #2a5298 100%)',
+                accent: '#3b82f6'
+            },
+            green: {
+                primary: 'linear-gradient(135deg, #0d1b2a 0%, #1b4332 50%, #2d5016 100%)',
+                accent: '#10b981'
+            },
+            orange: {
+                primary: 'linear-gradient(135deg, #2d1b0d 0%, #5c2e04 50%, #8b4513 100%)',
+                accent: '#f59e0b'
+            },
+            red: {
+                primary: 'linear-gradient(135deg, #2d0a0a 0%, #5c1a1a 50%, #8b2635 100%)',
+                accent: '#ef4444'
+            },
+            pink: {
+                primary: 'linear-gradient(135deg, #2d0a1f 0%, #5c1a3e 50%, #8b2653 100%)',
+                accent: '#ec4899'
+            }
+        };
+        
+        // Initialize particles
+        particlesJS('particles-js', {
+            particles: {
+                number: { value: 50, density: { enable: true, value_area: 800 } },
+                color: { value: '#ffffff' },
+                shape: { type: 'circle' },
+                opacity: { value: 0.5, random: false },
+                size: { value: 3, random: true },
+                line_linked: { enable: true, distance: 150, color: '#ffffff', opacity: 0.4, width: 1 },
+                move: { enable: true, speed: 2, direction: 'none', random: false, straight: false, out_mode: 'out', bounce: false }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: { onhover: { enable: true, mode: 'repulse' }, onclick: { enable: true, mode: 'push' }, resize: true },
+                modes: { repulse: { distance: 200, duration: 0.4 }, push: { particles_nb: 4 } }
+            },
+            retina_detect: true
+        });
+        
+        // Apply theme
+        function applyTheme(themeName) {
+            const theme = themes[themeName];
+            if (!theme) return;
+            
+            document.body.style.background = theme.primary;
+            document.documentElement.style.setProperty('--accent-color', theme.accent);
+            
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            document.querySelector(`[data-theme="${themeName}"]`).classList.add('active');
+        }
+        
+        // Color switcher functionality
+        document.getElementById('paletteToggle').addEventListener('click', function() {
+            document.getElementById('colorPalette').classList.toggle('active');
+        });
+        
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const theme = this.getAttribute('data-theme');
+                applyTheme(theme);
+                document.getElementById('colorPalette').classList.remove('active');
+            });
+        });
+        
+        // Initialize with purple theme
+        applyTheme('purple');
+    </script>
+</body>
+</html>

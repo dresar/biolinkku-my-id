@@ -1,0 +1,544 @@
+{% extends 'core/admin/base.html' %}
+
+{% block title %}Kelola Layanan{% endblock %}
+{% block page_title %}Kelola Layanan{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Kelola Layanan</h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Tambah, edit, dan kelola layanan yang ditampilkan di bio link Anda.</p>
+        </div>
+        <div class="mt-4 sm:mt-0">
+            <button onclick="openAddModal()" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white text-sm font-medium rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                <i class="fas fa-plus mr-2"></i>
+                Tambah Layanan
+            </button>
+        </div>
+    </div>
+
+    <!-- Services Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for service in services %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow">
+            <!-- Service Preview -->
+            <div class="p-6">
+                <div class="flex items-center space-x-4 mb-4">
+                    {% if service.icon %}
+                        <img src="{{ service.icon.url }}" alt="{{ service.title }}" class="h-12 w-12 rounded-lg object-cover">
+                    {% else %}
+                        <div class="h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-image text-gray-400"></i>
+                        </div>
+                    {% endif %}
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate">{{ service.title }}</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">ID: {{ service.id }}</p>
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        {% if service.is_active %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                Aktif
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400">
+                                <i class="fas fa-times-circle mr-1"></i>
+                                Nonaktif
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">{{ service.description }}</p>
+                
+                <!-- Color Preview -->
+                <div class="flex items-center space-x-2 mb-4">
+                    <span class="text-xs text-gray-500 dark:text-gray-400">Warna:</span>
+                    <div class="h-6 w-6 rounded border border-gray-300 dark:border-gray-600" style="background-color: {{ service.color }}"></div>
+                    {% if service.gradient_color %}
+                        <i class="fas fa-arrow-right text-xs text-gray-400"></i>
+                        <div class="h-6 w-6 rounded border border-gray-300 dark:border-gray-600" style="background-color: {{ service.gradient_color }}"></div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600">
+                <div class="flex items-center justify-between">
+                    <button onclick="previewService({{ service.id }})" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium">
+                        <i class="fas fa-eye mr-1"></i>
+                        Preview
+                    </button>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="editService({{ service.id }})" class="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteService({{ service.id }}, '{{ service.title }}')" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full">
+            <div class="text-center py-12">
+                <i class="fas fa-cogs text-4xl text-gray-400 mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Belum ada layanan</h3>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">Mulai dengan menambahkan layanan pertama Anda.</p>
+                <button onclick="openAddModal()" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white text-sm font-medium rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                    <i class="fas fa-plus mr-2"></i>
+                    Tambah Layanan
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div id="serviceModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 id="modalTitle" class="text-lg font-semibold text-gray-900 dark:text-white">Tambah Layanan</h3>
+            <button onclick="closeServiceModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <form id="serviceForm" class="p-6 space-y-6" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" id="serviceId" name="id">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="md:col-span-2">
+                    <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-heading mr-2"></i>Judul Layanan *
+                    </label>
+                    <input type="text" id="title" name="title" required
+                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                           placeholder="Masukkan judul layanan">
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-align-left mr-2"></i>Deskripsi *
+                    </label>
+                    <textarea id="description" name="description" rows="4" required
+                              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                              placeholder="Masukkan deskripsi layanan"></textarea>
+                </div>
+                
+                <div>
+                    <label for="icon" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-image mr-2"></i>Icon Layanan
+                    </label>
+                    <input type="file" id="icon" name="icon" accept="image/*"
+                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    <div id="iconPreview" class="mt-2 hidden">
+                        <img id="iconPreviewImg" src="" alt="Icon preview" class="h-16 w-16 rounded-lg object-cover">
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="link" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-link mr-2"></i>Link Layanan
+                    </label>
+                    <input type="url" id="link" name="link"
+                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                           placeholder="https://example.com">
+                </div>
+                
+                <div>
+                    <label for="color" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-palette mr-2"></i>Warna Utama *
+                    </label>
+                    <input type="color" id="color" name="color" value="#3b82f6" required
+                           class="w-full h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700">
+                </div>
+                
+                <div>
+                    <label for="gradient_color" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-palette mr-2"></i>Warna Gradasi
+                    </label>
+                    <input type="color" id="gradient_color" name="gradient_color"
+                           class="w-full h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700">
+                </div>
+                
+                <div>
+                    <label for="gradient_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-layer-group mr-2"></i>Tipe Gradasi
+                    </label>
+                    <select id="gradient_type" name="gradient_type"
+                            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="linear">Linear Gradient</option>
+                        <option value="radial">Radial Gradient</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="gradient_direction" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-compass mr-2"></i>Arah Gradasi
+                    </label>
+                    <select id="gradient_direction" name="gradient_direction"
+                            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="to right">Kanan</option>
+                        <option value="to left">Kiri</option>
+                        <option value="to bottom">Bawah</option>
+                        <option value="to top">Atas</option>
+                        <option value="to bottom right">Kanan Bawah</option>
+                        <option value="to bottom left">Kiri Bawah</option>
+                        <option value="to top right">Kanan Atas</option>
+                        <option value="to top left">Kiri Atas</option>
+                    </select>
+                </div>
+                
+                <input type="hidden" id="order" name="order" value="0">
+                
+                <div class="flex items-center">
+                    <label class="flex items-center">
+                        <input type="hidden" name="is_active" value="false">
+                        <input type="checkbox" id="is_active" name="is_active" checked
+                               class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700">
+                        <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-toggle-on mr-2"></i>Aktif
+                        </span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <button type="button" onclick="closeServiceModal()" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                    Batal
+                </button>
+                <button type="submit" class="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                    <i class="fas fa-save mr-2"></i>
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div id="previewModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Preview Layanan</h3>
+            <button onclick="closePreviewModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <div id="previewContent" class="p-6">
+            <!-- Preview content will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full">
+        <div class="p-6">
+            <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 dark:bg-red-900/20 rounded-full">
+                <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-xl"></i>
+            </div>
+            
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">Konfirmasi Hapus</h3>
+            <p class="text-gray-600 dark:text-gray-400 text-center mb-6">
+                Apakah Anda yakin ingin menghapus layanan <span id="deleteServiceName" class="font-semibold text-gray-900 dark:text-white"></span>?
+                <br><span class="text-sm text-red-600 dark:text-red-400">Tindakan ini tidak dapat dibatalkan.</span>
+            </p>
+            
+            <div class="flex items-center justify-center space-x-3">
+                <button type="button" onclick="closeDeleteModal()" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                    <i class="fas fa-times mr-2"></i>Batal
+                </button>
+                <button type="button" onclick="confirmDelete()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                    <i class="fas fa-trash mr-2"></i>Hapus
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let isEditing = false;
+    let currentServiceId = null;
+    
+    function openAddModal() {
+        isEditing = false;
+        currentServiceId = null;
+        document.getElementById('modalTitle').textContent = 'Tambah Layanan';
+        document.getElementById('serviceForm').reset();
+        document.getElementById('serviceId').value = '';
+        document.getElementById('iconPreview').classList.add('hidden');
+        openModal('serviceModal');
+    }
+    
+    function editService(id) {
+        isEditing = true;
+        currentServiceId = id;
+        document.getElementById('modalTitle').textContent = 'Edit Layanan';
+        
+        showLoading();
+        fetch(`/eka/service/preview/${id}/`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                const service = data.data;
+                document.getElementById('serviceId').value = service.id;
+                document.getElementById('title').value = service.title;
+                document.getElementById('description').value = service.description;
+                document.getElementById('link').value = service.link || '';
+                document.getElementById('color').value = service.color;
+                document.getElementById('gradient_color').value = service.gradient_color || '';
+                document.getElementById('gradient_type').value = service.gradient_type;
+                document.getElementById('gradient_direction').value = service.gradient_direction;
+                document.getElementById('order').value = service.order;
+                document.getElementById('is_active').checked = service.is_active;
+                
+                if (service.icon_url) {
+                    document.getElementById('iconPreviewImg').src = service.icon_url;
+                    document.getElementById('iconPreview').classList.remove('hidden');
+                } else {
+                    document.getElementById('iconPreview').classList.add('hidden');
+                }
+                
+                openModal('serviceModal');
+            } else {
+                showToast('Error: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            showToast('Terjadi kesalahan saat memuat data layanan.', 'error');
+        });
+    }
+    
+    let deleteServiceId = null;
+    let deleteServiceTitle = null;
+    
+    function deleteService(id, title) {
+        deleteServiceId = id;
+        deleteServiceTitle = title;
+        document.getElementById('deleteServiceName').textContent = title;
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+    
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+        deleteServiceId = null;
+        deleteServiceTitle = null;
+    }
+    
+    function confirmDelete() {
+        if (deleteServiceId) {
+            showLoading();
+            fetch(`/eka/service/delete/${deleteServiceId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                closeDeleteModal();
+                if (data.success) {
+                    showToast('Layanan berhasil dihapus!', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast('Error: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                closeDeleteModal();
+                console.error('Error:', error);
+                showToast('Terjadi kesalahan saat menghapus layanan', 'error');
+            });
+        }
+    }
+    
+    function previewService(id) {
+        showLoading();
+        fetch(`/eka/service/preview/${id}/`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                const service = data.data;
+                const modal = document.getElementById('previewModal');
+                const content = document.getElementById('previewContent');
+                
+                // Create gradient style
+                let gradientStyle = '';
+                if (service.gradient_color) {
+                    if (service.gradient_type === 'radial') {
+                        gradientStyle = `background: radial-gradient(circle, ${service.color}, ${service.gradient_color});`;
+                    } else {
+                        gradientStyle = `background: linear-gradient(${service.gradient_direction}, ${service.color}, ${service.gradient_color});`;
+                    }
+                } else {
+                    gradientStyle = `background-color: ${service.color};`;
+                }
+                
+                content.innerHTML = `
+                    <div class="text-center">
+                        <div class="w-20 h-20 mx-auto mb-4 rounded-xl flex items-center justify-center" style="${gradientStyle}">
+                            ${service.icon_url ? `<img src="${service.icon_url}" alt="${service.title}" class="w-12 h-12 object-contain">` : `<i class="fas fa-star text-white text-2xl"></i>`}
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">${service.title}</h3>
+                        <div class="text-gray-600 dark:text-gray-400 mb-4">${service.description}</div>
+                        ${service.link ? `<a href="${service.link}" target="_blank" class="inline-flex items-center px-4 py-2 text-white rounded-lg transition-colors" style="${gradientStyle}">Kunjungi Layanan <i class="fas fa-external-link-alt ml-2"></i></a>` : ''}
+                    </div>
+                `;
+                
+                openModal('previewModal');
+            } else {
+                showToast('Error: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            showToast('Terjadi kesalahan saat memuat preview.', 'error');
+        });
+    }
+    
+    function closeServiceModal() {
+        closeModal('serviceModal');
+    }
+    
+    function closePreviewModal() {
+        closeModal('previewModal');
+    }
+    
+    // Icon preview
+    document.getElementById('icon').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('iconPreviewImg').src = e.target.result;
+                document.getElementById('iconPreview').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        } else {
+            document.getElementById('iconPreview').classList.add('hidden');
+        }
+    });
+    
+    // Form submission
+    document.getElementById('serviceForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validate required fields
+        const title = document.getElementById('title').value.trim();
+        const description = document.getElementById('description').value.trim();
+        const color = document.getElementById('color').value;
+        
+        if (!title) {
+            showToast('Judul layanan harus diisi', 'error');
+            document.getElementById('title').focus();
+            return;
+        }
+        
+        if (!description) {
+            showToast('Deskripsi layanan harus diisi', 'error');
+            document.getElementById('description').focus();
+            return;
+        }
+        
+        if (!color) {
+            showToast('Warna utama harus dipilih', 'error');
+            document.getElementById('color').focus();
+            return;
+        }
+        
+        const formData = new FormData(this);
+        const url = isEditing ? `/eka/service/edit/${currentServiceId}/` : '/eka/service/add/';
+        
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
+        
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCSRFToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Data berhasil disimpan!', 'success');
+                closeServiceModal();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                if (data.errors) {
+                    let errorMessage = 'Terdapat kesalahan pada form:\n';
+                    for (const field in data.errors) {
+                        errorMessage += `- ${data.errors[field].join(', ')}\n`;
+                    }
+                    showToast(errorMessage, 'error');
+                } else {
+                    showToast('Error: ' + (data.message || 'Terjadi kesalahan saat menyimpan data'), 'error');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Terjadi kesalahan saat menyimpan layanan', 'error');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        });
+    });
+    
+    // Close modals when clicking outside
+    document.getElementById('serviceModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeServiceModal();
+        }
+    });
+    
+    document.getElementById('previewModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closePreviewModal();
+        }
+    });
+    
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDeleteModal();
+        }
+    });
+</script>
+{% endblock %}

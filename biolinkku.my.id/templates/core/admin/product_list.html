@@ -1,0 +1,784 @@
+{% extends 'core/admin/base.html' %}
+
+{% block title %}Kelola Produk{% endblock %}
+{% block page_title %}Kelola Produk{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Kelola Produk</h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Tambah, edit, dan kelola produk yang ditampilkan di bio link Anda.</p>
+        </div>
+        <div class="mt-4 sm:mt-0">
+            <button onclick="openAddModal()" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white text-sm font-medium rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                <i class="fas fa-plus mr-2"></i>
+                Tambah Produk
+            </button>
+        </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for product in products %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow">
+            <!-- Product Preview -->
+            <div class="aspect-w-16 aspect-h-9 bg-gray-200 dark:bg-gray-700">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.title }}" class="w-full h-48 object-cover">
+                {% else %}
+                    <div class="w-full h-48 flex items-center justify-center">
+                        <i class="fas fa-image text-4xl text-gray-400"></i>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="p-6">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate">{{ product.title }}</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-1">{{ product.description|truncatechars:80 }}</p>
+                    </div>
+                    <div class="flex items-center space-x-1 ml-2">
+                        {% if product.is_active %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                Aktif
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400">
+                                <i class="fas fa-times-circle mr-1"></i>
+                                Nonaktif
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Price Info -->
+                <div class="mb-4">
+                    <div class="flex items-center space-x-2">
+                        {% if product.discount_price %}
+                            <span class="text-lg font-bold text-green-600 dark:text-green-400">Rp {{ product.discount_price|floatformat:0 }}</span>
+                            <span class="text-sm text-gray-500 dark:text-gray-400 line-through">Rp {{ product.price|floatformat:0 }}</span>
+                        {% else %}
+                            <span class="text-lg font-bold text-gray-900 dark:text-white">Rp {{ product.price|floatformat:0 }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Links Info -->
+                {% if product.link or product.additional_link %}
+                <div class="mb-4 space-y-1">
+                    {% if product.link %}
+                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                            <i class="fas fa-link mr-1"></i>{{ product.link_label|default:"Link Utama" }}
+                        </div>
+                    {% endif %}
+                    {% if product.additional_link %}
+                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                            <i class="fas fa-external-link-alt mr-1"></i>{{ product.additional_link_label|default:"Link Tambahan" }}
+                        </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Actions -->
+            <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600">
+                <div class="flex items-center justify-between">
+                    <button onclick="previewProduct({{ product.id }})" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium">
+                        <i class="fas fa-eye mr-1"></i>
+                        Preview
+                    </button>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="editProduct({{ product.id }})" class="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteProduct({{ product.id }}, '{{ product.title }}')
+                        " class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full">
+            <div class="text-center py-12">
+                <i class="fas fa-box text-4xl text-gray-400 mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Belum ada produk</h3>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">Mulai dengan menambahkan produk pertama Anda.</p>
+                <button onclick="openAddModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+                    <i class="fas fa-plus mr-2"></i>
+                    Tambah Produk
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div id="productModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 id="modalTitle" class="text-lg font-semibold text-gray-900 dark:text-white">Tambah Produk</h3>
+            <button onclick="closeProductModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <form id="productForm" class="p-6 space-y-6" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" id="productId" name="id">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Left Column -->
+                <div class="space-y-6">
+                    <div>
+                        <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-tag mr-2"></i>Nama Produk *
+                        </label>
+                        <input type="text" id="title" name="title" required
+                               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                               placeholder="Masukkan nama produk">
+                    </div>
+                    
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-align-left mr-2"></i>Deskripsi *
+                        </label>
+                        <textarea id="description" name="description" rows="4" required
+                                  class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                  placeholder="Masukkan deskripsi produk"></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="price" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-dollar-sign mr-2"></i>Harga *
+                            </label>
+                            <input type="text" id="price" name="price" required
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                   placeholder="100000">
+                        </div>
+                        
+                        <div>
+                            <label for="discount_price" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-percentage mr-2"></i>Harga Diskon
+                            </label>
+                            <input type="text" id="discount_price" name="discount_price"
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                   placeholder="80000">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="link" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-link mr-2"></i>Link Utama
+                            </label>
+                            <input type="url" id="link" name="link"
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                   placeholder="https://example.com">
+                        </div>
+                        
+                        <div>
+                            <label for="link_label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-tag mr-2"></i>Label Link Utama
+                            </label>
+                            <input type="text" id="link_label" name="link_label"
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                   placeholder="Beli Sekarang">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="additional_link" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-external-link-alt mr-2"></i>Link Tambahan
+                            </label>
+                            <input type="url" id="additional_link" name="additional_link"
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                   placeholder="https://demo.example.com">
+                        </div>
+                        
+                        <div>
+                            <label for="additional_link_label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-tag mr-2"></i>Label Link Tambahan
+                            </label>
+                            <input type="text" id="additional_link_label" name="additional_link_label"
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                   placeholder="Lihat Demo">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="flex items-center">
+                            <input type="hidden" name="is_active" value="false">
+                            <input type="checkbox" id="is_active" name="is_active" value="true" checked
+                                   class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700">
+                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                                <i class="fas fa-toggle-on mr-2"></i>Aktif
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div class="space-y-6">
+                    <div>
+                        <label for="image" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-image mr-2"></i>Gambar Utama
+                        </label>
+                        <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-gray-400 dark:hover:border-gray-500 transition-colors">
+                            <input type="file" id="image" name="image" accept="image/*" class="hidden" onchange="previewMainImage(this)">
+                            <div id="imagePreview" class="space-y-4">
+                                <div id="imagePreviewContainer" class="hidden">
+                                    <img id="imagePreviewImg" src="" alt="Preview" class="max-w-full h-48 object-cover rounded-lg mx-auto">
+                                </div>
+                                <div id="imageUploadArea">
+                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                                    <p class="text-gray-600 dark:text-gray-400 mb-2">Klik untuk upload gambar</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, GIF hingga 10MB</p>
+                                </div>
+                            </div>
+                            <button type="button" onclick="document.getElementById('image').click()" class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                                <i class="fas fa-upload mr-2"></i>Pilih Gambar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="additional_images" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-images mr-2"></i>Gambar Tambahan
+                        </label>
+                        <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-gray-400 dark:hover:border-gray-500 transition-colors">
+                            <input type="file" id="additional_images" name="additional_images" accept="image/*" multiple class="hidden" onchange="previewAdditionalImages(this)">
+                            <div id="additionalImagesPreview" class="space-y-4">
+                                <div id="additionalImagesContainer" class="hidden grid grid-cols-2 gap-2">
+                                    <!-- Additional images will be shown here -->
+                                </div>
+                                <div id="additionalImagesUploadArea">
+                                    <i class="fas fa-images text-4xl text-gray-400 mb-4"></i>
+                                    <p class="text-gray-600 dark:text-gray-400 mb-2">Klik untuk upload gambar tambahan</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Bisa pilih beberapa gambar sekaligus</p>
+                                </div>
+                            </div>
+                            <button type="button" onclick="document.getElementById('additional_images').click()" class="mt-4 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+                                <i class="fas fa-upload mr-2"></i>Pilih Gambar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Existing Additional Images (for edit mode) -->
+                    <div id="existingImagesSection" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-images mr-2"></i>Gambar Tambahan Saat Ini
+                        </label>
+                        <div id="existingImagesContainer" class="grid grid-cols-2 gap-2">
+                            <!-- Existing images will be shown here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Preview Card -->
+            <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Preview:</h4>
+                <div id="previewCard" class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                    <div class="flex items-start space-x-4">
+                        <div id="previewImageContainer" class="flex-shrink-0">
+                            <div id="previewImage" class="w-20 h-20 bg-gray-200 dark:bg-gray-600 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-image text-gray-400"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div id="previewTitle" class="font-medium text-gray-900 dark:text-white">Nama Produk</div>
+                            <div id="previewDescription" class="text-sm text-gray-600 dark:text-gray-400 mt-1">Deskripsi produk</div>
+                            <div id="previewPrice" class="mt-2">
+                                <span class="text-lg font-bold text-gray-900 dark:text-white">Rp 0</span>
+                            </div>
+                            <div id="previewLinks" class="mt-2 space-x-2">
+                                <!-- Links will be shown here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <button type="button" onclick="closeProductModal()" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                    Batal
+                </button>
+                <button type="submit" class="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                    <i class="fas fa-save mr-2"></i>
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div id="previewModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Preview Produk</h3>
+            <button onclick="closePreviewModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <div id="previewContent" class="p-6">
+            <!-- Preview content will be loaded here -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let isEditing = false;
+    let currentProductId = null;
+    
+    function formatPrice(price) {
+        return new Intl.NumberFormat('id-ID').format(price);
+    }
+    
+    function previewMainImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('imagePreviewImg').src = e.target.result;
+                document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                document.getElementById('imageUploadArea').classList.add('hidden');
+                
+                // Update preview card
+                const previewImage = document.getElementById('previewImage');
+                previewImage.innerHTML = `<img src="${e.target.result}" alt="Preview" class="w-full h-full object-cover rounded-lg">`;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    
+    function previewAdditionalImages(input) {
+        if (input.files && input.files.length > 0) {
+            const container = document.getElementById('additionalImagesContainer');
+            container.innerHTML = '';
+            
+            Array.from(input.files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageDiv = document.createElement('div');
+                    imageDiv.className = 'relative';
+                    imageDiv.innerHTML = `
+                        <img src="${e.target.result}" alt="Additional ${index + 1}" class="w-full h-20 object-cover rounded-lg">
+                        <button type="button" onclick="removeAdditionalImage(${index})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    container.appendChild(imageDiv);
+                };
+                reader.readAsDataURL(file);
+            });
+            
+            document.getElementById('additionalImagesContainer').classList.remove('hidden');
+            document.getElementById('additionalImagesUploadArea').classList.add('hidden');
+        }
+    }
+    
+    function removeAdditionalImage(index) {
+        const input = document.getElementById('additional_images');
+        const dt = new DataTransfer();
+        
+        Array.from(input.files).forEach((file, i) => {
+            if (i !== index) {
+                dt.items.add(file);
+            }
+        });
+        
+        input.files = dt.files;
+        previewAdditionalImages(input);
+        
+        if (input.files.length === 0) {
+            document.getElementById('additionalImagesContainer').classList.add('hidden');
+            document.getElementById('additionalImagesUploadArea').classList.remove('hidden');
+        }
+    }
+    
+    function updatePreview() {
+        const title = document.getElementById('title').value || 'Nama Produk';
+        const description = document.getElementById('description').value || 'Deskripsi produk';
+        const price = document.getElementById('price').value || '0';
+        const discountPrice = document.getElementById('discount_price').value;
+        const link = document.getElementById('link').value;
+        const linkLabel = document.getElementById('link_label').value || 'Beli Sekarang';
+        const additionalLink = document.getElementById('additional_link').value;
+        const additionalLinkLabel = document.getElementById('additional_link_label').value || 'Lihat Demo';
+        
+        document.getElementById('previewTitle').textContent = title;
+        document.getElementById('previewDescription').textContent = description;
+        
+        // Update price display
+        const priceContainer = document.getElementById('previewPrice');
+        if (discountPrice && discountPrice !== '') {
+            priceContainer.innerHTML = `
+                <span class="text-lg font-bold text-green-600 dark:text-green-400">Rp ${formatPrice(discountPrice)}</span>
+                <span class="text-sm text-gray-500 dark:text-gray-400 line-through ml-2">Rp ${formatPrice(price)}</span>
+            `;
+        } else {
+            priceContainer.innerHTML = `<span class="text-lg font-bold text-gray-900 dark:text-white">Rp ${formatPrice(price)}</span>`;
+        }
+        
+        // Update links
+        const linksContainer = document.getElementById('previewLinks');
+        let linksHtml = '';
+        if (link) {
+            linksHtml += `<span class="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400 text-xs rounded">${linkLabel}</span>`;
+        }
+        if (additionalLink) {
+            linksHtml += `<span class="inline-flex items-center px-2 py-1 bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400 text-xs rounded">${additionalLinkLabel}</span>`;
+        }
+        linksContainer.innerHTML = linksHtml;
+    }
+    
+    function openAddModal() {
+        isEditing = false;
+        currentProductId = null;
+        document.getElementById('modalTitle').textContent = 'Tambah Produk';
+        document.getElementById('productForm').reset();
+        document.getElementById('productId').value = '';
+        
+        // Reset image previews
+        document.getElementById('imagePreviewContainer').classList.add('hidden');
+        document.getElementById('imageUploadArea').classList.remove('hidden');
+        document.getElementById('additionalImagesContainer').classList.add('hidden');
+        document.getElementById('additionalImagesUploadArea').classList.remove('hidden');
+        document.getElementById('existingImagesSection').classList.add('hidden');
+        
+        // Reset preview card
+        document.getElementById('previewImage').innerHTML = '<i class="fas fa-image text-gray-400"></i>';
+        
+        updatePreview();
+        openModal('productModal');
+    }
+    
+    function editProduct(id) {
+        isEditing = true;
+        currentProductId = id;
+        document.getElementById('modalTitle').textContent = 'Edit Produk';
+        
+        showLoading();
+        fetch(`/eka/product/edit/${id}/`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                const product = data.data;
+                document.getElementById('productId').value = product.id;
+                document.getElementById('title').value = product.title;
+                document.getElementById('description').value = product.description;
+                document.getElementById('price').value = product.price;
+                document.getElementById('discount_price').value = product.discount_price || '';
+                document.getElementById('link').value = product.link || '';
+                document.getElementById('link_label').value = product.link_label || '';
+                document.getElementById('additional_link').value = product.additional_link || '';
+                document.getElementById('additional_link_label').value = product.additional_link_label || '';
+                document.getElementById('is_active').checked = product.is_active;
+                
+                // Handle main image
+                if (product.image_url) {
+                    document.getElementById('imagePreviewImg').src = product.image_url;
+                    document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                    document.getElementById('imageUploadArea').classList.add('hidden');
+                    
+                    // Update preview card
+                    const previewImage = document.getElementById('previewImage');
+                    previewImage.innerHTML = `<img src="${product.image_url}" alt="Preview" class="w-full h-full object-cover rounded-lg">`;
+                }
+                
+                // Handle additional images
+                if (product.additional_images && product.additional_images.length > 0) {
+                    const existingContainer = document.getElementById('existingImagesContainer');
+                    existingContainer.innerHTML = '';
+                    
+                    product.additional_images.forEach(img => {
+                        const imageDiv = document.createElement('div');
+                        imageDiv.className = 'relative';
+                        imageDiv.innerHTML = `
+                            <img src="${img.url}" alt="Additional" class="w-full h-20 object-cover rounded-lg">
+                            <button type="button" onclick="deleteExistingImage(${img.id})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        `;
+                        existingContainer.appendChild(imageDiv);
+                    });
+                    
+                    document.getElementById('existingImagesSection').classList.remove('hidden');
+                }
+                
+                updatePreview();
+                openModal('productModal');
+            } else {
+                showToast('Error: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            showToast('Terjadi kesalahan saat memuat data produk.', 'error');
+        });
+    }
+    
+    function deleteExistingImage(imageId) {
+        if (confirm('Apakah Anda yakin ingin menghapus gambar ini?')) {
+            fetch(`/eka/product/image/delete/${imageId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove the image from display
+                    event.target.closest('.relative').remove();
+                    showToast('Gambar berhasil dihapus', 'success');
+                } else {
+                    showToast('Error: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Terjadi kesalahan saat menghapus gambar', 'error');
+            });
+        }
+    }
+    
+    function deleteProduct(id, title) {
+        if (confirm(`Apakah Anda yakin ingin menghapus produk "${title}"?`)) {
+            showLoading();
+            fetch(`/eka/product/delete/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    showToast('Produk berhasil dihapus', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast('Error: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Error:', error);
+                showToast('Terjadi kesalahan saat menghapus produk.', 'error');
+            });
+        }
+    }
+    
+    function previewProduct(id) {
+        showLoading();
+        fetch(`/eka/product/preview/${id}/`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                const product = data.data;
+                let priceHtml = '';
+                if (product.discount_price && product.discount_price !== 'None') {
+                    priceHtml = `
+                        <div class="flex items-center space-x-2 mb-4">
+                            <span class="text-2xl font-bold text-green-600 dark:text-green-400">Rp ${formatPrice(product.discount_price)}</span>
+                            <span class="text-lg text-gray-500 dark:text-gray-400 line-through">Rp ${formatPrice(product.price)}</span>
+                        </div>
+                    `;
+                } else {
+                    priceHtml = `<div class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Rp ${formatPrice(product.price)}</div>`;
+                }
+                
+                let linksHtml = '';
+                if (product.link) {
+                    linksHtml += `
+                        <a href="${product.link}" target="_blank" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors mr-2 mb-2">
+                            <i class="fas fa-external-link-alt mr-2"></i>
+                            ${product.link_label || 'Beli Sekarang'}
+                        </a>
+                    `;
+                }
+                if (product.additional_link) {
+                    linksHtml += `
+                        <a href="${product.additional_link}" target="_blank" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors mb-2">
+                            <i class="fas fa-external-link-alt mr-2"></i>
+                            ${product.additional_link_label || 'Lihat Demo'}
+                        </a>
+                    `;
+                }
+                
+                let additionalImagesHtml = '';
+                if (product.images && product.images.length > 0) {
+                    additionalImagesHtml = `
+                        <div class="mt-6">
+                            <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Gambar Tambahan:</h5>
+                            <div class="grid grid-cols-3 gap-2">
+                                ${product.images.map(img => `
+                                    <img src="${img.url}" alt="Additional" class="w-full h-20 object-cover rounded-lg">
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                document.getElementById('previewContent').innerHTML = `
+                    <div class="text-center space-y-4">
+                        ${product.image_url ? `<img src="${product.image_url}" alt="${product.title}" class="w-full max-w-md mx-auto rounded-lg">` : ''}
+                        <div>
+                            <h4 class="text-2xl font-bold text-gray-900 dark:text-white">${product.title}</h4>
+                            <p class="text-gray-600 dark:text-gray-400 mt-2">${product.description}</p>
+                        </div>
+                        ${priceHtml}
+                        <div class="flex flex-wrap justify-center">
+                            ${linksHtml}
+                        </div>
+                        ${additionalImagesHtml}
+                    </div>
+                `;
+                openModal('previewModal');
+            } else {
+                showToast('Error: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            showToast('Terjadi kesalahan saat memuat preview.', 'error');
+        });
+    }
+    
+    function closeProductModal() {
+        closeModal('productModal');
+    }
+    
+    function closePreviewModal() {
+        closeModal('previewModal');
+    }
+    
+    // Form submission
+    document.getElementById('productForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validate required fields
+        const title = document.getElementById('title').value.trim();
+        const description = document.getElementById('description').value.trim();
+        const price = document.getElementById('price').value.trim();
+        
+        if (!title) {
+            showToast('Nama produk harus diisi', 'error');
+            document.getElementById('title').focus();
+            return;
+        }
+        
+        if (!description) {
+            showToast('Deskripsi harus diisi', 'error');
+            document.getElementById('description').focus();
+            return;
+        }
+        
+        if (!price) {
+            showToast('Harga harus diisi', 'error');
+            document.getElementById('price').focus();
+            return;
+        }
+        
+        const formData = new FormData(this);
+        const url = isEditing ? `/eka/product/edit/${currentProductId}/` : '/eka/product/add/';
+        
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
+        
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCSRFToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Data berhasil disimpan!', 'success');
+                closeProductModal();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                if (data.errors) {
+                    let errorMessage = 'Terdapat kesalahan pada form:\n';
+                    for (const field in data.errors) {
+                        errorMessage += `- ${data.errors[field].join(', ')}\n`;
+                    }
+                    showToast(errorMessage, 'error');
+                } else {
+                    showToast('Error: ' + (data.message || 'Terjadi kesalahan saat menyimpan data'), 'error');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Terjadi kesalahan saat menyimpan produk', 'error');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        });
+    });
+    
+    // Real-time preview updates
+    document.getElementById('title').addEventListener('input', updatePreview);
+    document.getElementById('description').addEventListener('input', updatePreview);
+    document.getElementById('price').addEventListener('input', updatePreview);
+    document.getElementById('discount_price').addEventListener('input', updatePreview);
+    document.getElementById('link').addEventListener('input', updatePreview);
+    document.getElementById('link_label').addEventListener('input', updatePreview);
+    document.getElementById('additional_link').addEventListener('input', updatePreview);
+    document.getElementById('additional_link_label').addEventListener('input', updatePreview);
+    
+    // Close modals when clicking outside
+    document.getElementById('productModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeProductModal();
+        }
+    });
+    
+    document.getElementById('previewModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closePreviewModal();
+        }
+    });
+    
+    // Initialize preview on page load
+    updatePreview();
+</script>
+{% endblock %}

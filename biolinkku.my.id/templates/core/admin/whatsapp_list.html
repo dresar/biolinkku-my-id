@@ -1,0 +1,618 @@
+{% extends 'core/admin/base.html' %}
+
+{% block title %}Template WhatsApp{% endblock %}
+{% block page_title %}Template WhatsApp{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Template WhatsApp</h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Kelola template pesan WhatsApp untuk berbagai keperluan.</p>
+        </div>
+        <div class="mt-4 sm:mt-0">
+            <button onclick="openAddModal()" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors">
+                <i class="fab fa-whatsapp mr-2"></i>
+                Tambah Template
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter by Category -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="flex flex-wrap items-center gap-2">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Filter Kategori:</span>
+            <button onclick="filterByCategory('all')" class="category-filter active px-3 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/30 transition-colors">
+                Semua
+            </button>
+            <button onclick="filterByCategory('greeting')" class="category-filter px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                Salam & Sapaan
+            </button>
+            <button onclick="filterByCategory('business')" class="category-filter px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                Bisnis & Promosi
+            </button>
+            <button onclick="filterByCategory('invitation')" class="category-filter px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                Undangan
+            </button>
+            <button onclick="filterByCategory('thank_you')" class="category-filter px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                Terima Kasih
+            </button>
+            <button onclick="filterByCategory('other')" class="category-filter px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                Lainnya
+            </button>
+        </div>
+    </div>
+
+    <!-- Templates Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="templatesGrid">
+        {% for template in whatsapp_templates %}
+        <div class="template-card bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow" data-category="{{ template.category }}">
+            <!-- Template Header -->
+            <div class="p-6">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate">{{ template.title }}</h3>
+                            {% if template.is_active %}
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    Aktif
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400">
+                                    <i class="fas fa-times-circle mr-1"></i>
+                                    Nonaktif
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400">
+                                <i class="fas fa-tag mr-1"></i>
+                                {{ template.get_category_display }}
+                            </span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">Order: {{ template.order }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if template.description %}
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ template.description }}</p>
+                {% endif %}
+                
+                <!-- Message Preview -->
+                <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 mb-4">
+                    <div class="flex items-start space-x-2">
+                        <i class="fab fa-whatsapp text-green-600 dark:text-green-400 mt-1"></i>
+                        <div class="flex-1">
+                            <p class="text-sm text-gray-700 dark:text-gray-300 line-clamp-4">{{ template.message|truncatewords:20 }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Created Date -->
+                <div class="text-xs text-gray-500 dark:text-gray-400">
+                    <i class="fas fa-calendar mr-1"></i>
+                    {{ template.created_at|date:"d M Y" }}
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <button onclick="previewTemplate({{ template.id }})" class="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 text-sm font-medium">
+                            <i class="fas fa-eye mr-1"></i>
+                            Preview
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="editTemplate({{ template.id }})" class="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteTemplate({{ template.id }}, '{{ template.title }}')" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full">
+            <div class="text-center py-12">
+                <i class="fab fa-whatsapp text-4xl text-gray-400 mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Belum ada template WhatsApp</h3>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">Mulai dengan menambahkan template pesan WhatsApp pertama Anda.</p>
+                <button onclick="openAddModal()" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors">
+                    <i class="fab fa-whatsapp mr-2"></i>
+                    Tambah Template
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div id="templateModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 id="modalTitle" class="text-lg font-semibold text-gray-900 dark:text-white">Tambah Template WhatsApp</h3>
+            <button onclick="closeTemplateModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <form id="templateForm" class="p-6 space-y-6">
+            {% csrf_token %}
+            <input type="hidden" id="templateId" name="id">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Left Column -->
+                <div class="space-y-6">
+                    <div>
+                        <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-heading mr-2"></i>Judul Template *
+                        </label>
+                        <input type="text" id="title" name="title" required
+                               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                               placeholder="Masukkan judul template">
+                    </div>
+                    
+                    <div>
+                        <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-tag mr-2"></i>Kategori *
+                        </label>
+                        <select id="category" name="category" required
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <option value="">Pilih Kategori</option>
+                            <option value="greeting">Salam & Sapaan</option>
+                            <option value="business">Bisnis & Promosi</option>
+                            <option value="invitation">Undangan</option>
+                            <option value="thank_you">Ucapan Terima Kasih</option>
+                            <option value="apology">Permintaan Maaf</option>
+                            <option value="reminder">Pengingat</option>
+                            <option value="congratulation">Ucapan Selamat</option>
+                            <option value="holiday">Hari Raya & Libur</option>
+                            <option value="birthday">Ulang Tahun</option>
+                            <option value="motivational">Motivasi & Inspirasi</option>
+                            <option value="announcement">Pengumuman</option>
+                            <option value="follow_up">Follow Up</option>
+                            <option value="other">Lainnya</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-align-left mr-2"></i>Deskripsi (Opsional)
+                        </label>
+                        <textarea id="description" name="description" rows="3"
+                                  class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                  placeholder="Deskripsi singkat tentang template ini"></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="order" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-sort-numeric-up mr-2"></i>Urutan
+                            </label>
+                            <input type="number" id="order" name="order" value="0" min="0"
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        </div>
+                        
+                        <div class="flex items-end">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="is_active" name="is_active" checked
+                                       class="rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500 dark:bg-gray-700">
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                                    <i class="fas fa-toggle-on mr-2"></i>Aktif
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div class="space-y-6">
+                    <div>
+                        <label for="message" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fab fa-whatsapp mr-2"></i>Pesan Template *
+                        </label>
+                        <textarea id="message" name="message" rows="12" required
+                                  class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                  placeholder="Tulis pesan template WhatsApp di sini..."></textarea>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Tips: Gunakan variabel seperti {nama}, {tanggal}, {produk} untuk personalisasi
+                        </p>
+                    </div>
+                    
+                    <!-- Preview -->
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                            <i class="fas fa-eye mr-2"></i>Preview WhatsApp:
+                        </h4>
+                        <div class="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                            <div class="flex items-start space-x-2">
+                                <div class="h-8 w-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm">
+                                    <i class="fab fa-whatsapp"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="bg-green-100 dark:bg-green-900/20 rounded-lg p-3">
+                                        <div id="messagePreview" class="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+                                            Tulis pesan untuk melihat preview...
+                                        </div>
+                                    </div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        Sekarang
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <button type="button" onclick="closeTemplateModal()" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                    Batal
+                </button>
+                <button type="submit" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+                    <i class="fas fa-save mr-2"></i>
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div id="previewModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Preview Template</h3>
+            <button onclick="closePreviewModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <div id="previewContent" class="p-6">
+            <!-- Preview content will be loaded here -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let isEditing = false;
+    let currentTemplateId = null;
+    let messageEditor = null;
+    
+    // Initialize CKEditor when document is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeCKEditor('message', {
+            toolbar: ['bold', 'italic', '|', 'bulletedList', 'numberedList', '|', 'link', '|', 'undo', 'redo']
+        }).then(editor => {
+            messageEditor = editor;
+            
+            // Update preview when content changes
+            editor.model.document.on('change:data', () => {
+                updateMessagePreview();
+            });
+        }).catch(error => {
+            console.error('Error initializing CKEditor:', error);
+            // Fallback to regular textarea
+            document.getElementById('message').addEventListener('input', updateMessagePreview);
+        });
+    });
+    
+    function updateMessagePreview() {
+        const messagePreview = document.getElementById('messagePreview');
+        let content = '';
+        
+        if (messageEditor) {
+            content = messageEditor.getData().replace(/<[^>]*>/g, ''); // Strip HTML tags
+        } else {
+            content = document.getElementById('message').value;
+        }
+        
+        messagePreview.textContent = content || 'Tulis pesan untuk melihat preview...';
+    }
+    
+    function filterByCategory(category) {
+        const cards = document.querySelectorAll('.template-card');
+        const filters = document.querySelectorAll('.category-filter');
+        
+        // Update active filter
+        filters.forEach(filter => {
+            filter.classList.remove('active', 'bg-blue-100', 'dark:bg-blue-900/20', 'text-blue-800', 'dark:text-blue-400');
+            filter.classList.add('bg-gray-100', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
+        });
+        
+        event.target.classList.add('active', 'bg-blue-100', 'dark:bg-blue-900/20', 'text-blue-800', 'dark:text-blue-400');
+        event.target.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
+        
+        // Filter cards
+        cards.forEach(card => {
+            if (category === 'all' || card.dataset.category === category) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+    
+    function openAddModal() {
+        isEditing = false;
+        currentTemplateId = null;
+        document.getElementById('modalTitle').textContent = 'Tambah Template WhatsApp';
+        document.getElementById('templateForm').reset();
+        document.getElementById('templateId').value = '';
+        
+        if (messageEditor) {
+            messageEditor.setData('');
+        }
+        
+        updateMessagePreview();
+        openModal('templateModal');
+    }
+    
+    function editTemplate(id) {
+        isEditing = true;
+        currentTemplateId = id;
+        document.getElementById('modalTitle').textContent = 'Edit Template WhatsApp';
+        
+        showLoading();
+        fetch(`/eka/whatsapp/edit/${id}/`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                const template = data.data;
+                document.getElementById('templateId').value = template.id;
+                document.getElementById('title').value = template.title;
+                document.getElementById('category').value = template.category;
+                document.getElementById('description').value = template.description || '';
+                document.getElementById('order').value = template.order;
+                document.getElementById('is_active').checked = template.is_active;
+                
+                if (messageEditor) {
+                    messageEditor.setData(template.message);
+                } else {
+                    document.getElementById('message').value = template.message;
+                }
+                
+                updateMessagePreview();
+                openModal('templateModal');
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat memuat data template.');
+        });
+    }
+    
+    function deleteTemplate(id, title) {
+        if (confirm(`Apakah Anda yakin ingin menghapus template "${title}"?`)) {
+            showLoading();
+            fetch(`/eka/whatsapp/delete/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menghapus template.');
+            });
+        }
+    }
+    
+    function previewTemplate(id) {
+        showLoading();
+        fetch(`/eka/whatsapp/preview/${id}/`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                const template = data.data;
+                document.getElementById('previewContent').innerHTML = `
+                    <div class="space-y-4">
+                        <div class="text-center">
+                            <div class="inline-flex items-center justify-center h-16 w-16 bg-green-500 rounded-full text-white mb-4">
+                                <i class="fab fa-whatsapp text-2xl"></i>
+                            </div>
+                            <h4 class="text-xl font-semibold text-gray-900 dark:text-white">${template.title}</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">${template.category_display}</p>
+                        </div>
+                        
+                        ${template.description ? `<p class="text-sm text-gray-600 dark:text-gray-400 text-center">${template.description}</p>` : ''}
+                        
+                        <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                            <h5 class="font-medium text-gray-900 dark:text-white mb-2">Pesan:</h5>
+                            <div class="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                                <div class="flex items-start space-x-2">
+                                    <div class="h-8 w-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="bg-green-100 dark:bg-green-900/20 rounded-lg p-3">
+                                            <div class="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">${template.message}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-center">
+                            <button onclick="shareTemplate(${template.id})" class="bg-green-600 hover:bg-green-700 text-white text-center py-2 px-6 rounded-lg transition-colors">
+                                <i class="fab fa-whatsapp mr-2"></i>
+                                Kirim WA
+                            </button>
+                        </div>
+                    </div>
+                `;
+                openModal('previewModal');
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat memuat preview.');
+        });
+    }
+    
+
+    
+    function shareTemplate(id) {
+        showLoading();
+        fetch(`/eka/whatsapp/preview/${id}/`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                const message = encodeURIComponent(data.data.message);
+                const whatsappUrl = `https://wa.me/?text=${message}`;
+                window.open(whatsappUrl, '_blank');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+        });
+    }
+    
+    function closeTemplateModal() {
+        closeModal('templateModal');
+    }
+    
+    function closePreviewModal() {
+        closeModal('previewModal');
+    }
+    
+    // Form submission
+    document.getElementById('templateForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validate required fields
+        const title = document.getElementById('title').value.trim();
+        const message = messageEditor ? messageEditor.getData().trim() : document.getElementById('message').value.trim();
+        
+        if (!title) {
+            showToast('Judul template harus diisi', 'error');
+            document.getElementById('title').focus();
+            return;
+        }
+        
+        if (!message) {
+            showToast('Pesan template harus diisi', 'error');
+            if (messageEditor) {
+                messageEditor.editing.view.focus();
+            } else {
+                document.getElementById('message').focus();
+            }
+            return;
+        }
+        
+        const formData = new FormData(this);
+        
+        // Add CKEditor content
+        if (messageEditor) {
+            formData.set('message', messageEditor.getData());
+        }
+        
+        const url = isEditing ? `/eka/whatsapp/edit/${currentTemplateId}/` : '/eka/whatsapp/add/';
+        
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
+        
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCSRFToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Data berhasil disimpan!', 'success');
+                closeTemplateModal();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                if (data.errors) {
+                    let errorMessage = 'Terdapat kesalahan pada form:\n';
+                    for (const field in data.errors) {
+                        errorMessage += `- ${data.errors[field].join(', ')}\n`;
+                    }
+                    showToast(errorMessage, 'error');
+                } else {
+                    showToast('Error: ' + (data.message || 'Terjadi kesalahan saat menyimpan data'), 'error');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Terjadi kesalahan saat menyimpan template', 'error');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        });
+    });
+    
+    // Close modals when clicking outside
+    document.getElementById('templateModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeTemplateModal();
+        }
+    });
+    
+    document.getElementById('previewModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closePreviewModal();
+        }
+    });
+    
+    // Initialize message preview
+    updateMessagePreview();
+</script>
+{% endblock %}

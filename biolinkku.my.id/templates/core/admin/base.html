@@ -1,0 +1,551 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel{% endblock %} - Bio Link</title>
+    
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="{% static 'fontawesomefree/css/all.min.css' %}">
+    
+    <!-- CKEditor -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+    
+    <!-- Favicon -->
+    {% if site_settings.site_favicon %}
+    <link rel="icon" type="image/x-icon" href="{{ site_settings.site_favicon.url }}">
+    {% else %}
+    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+    {% endif %}
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <!-- Mobile menu overlay -->
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"></div>
+    
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+        <!-- Logo -->
+        <div class="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="h-8 w-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-link text-white text-sm"></i>
+                </div>
+                <span class="text-xl font-bold text-gray-900 dark:text-white">Bio Link</span>
+            </div>
+            <button id="close-sidebar" class="lg:hidden text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Navigation -->
+        <nav class="mt-6 px-3">
+            <div class="space-y-1">
+                <a href="{% url 'admin_dashboard' %}" class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {% if request.resolver_match.url_name == 'admin_dashboard' %}bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400{% else %}text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700{% endif %}">
+                    <i class="fas fa-tachometer-alt mr-3 text-lg"></i>
+                    Dashboard
+                </a>
+                
+                <a href="{% url 'admin_service_list' %}" class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {% if request.resolver_match.url_name|slice:':13' == 'admin_service' %}bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400{% else %}text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700{% endif %}">
+                    <i class="fas fa-cogs mr-3 text-lg"></i>
+                    Layanan
+                </a>
+                
+                <a href="{% url 'admin_product_list' %}" class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {% if request.resolver_match.url_name|slice:':13' == 'admin_product' %}bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400{% else %}text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700{% endif %}">
+                    <i class="fas fa-box mr-3 text-lg"></i>
+                    Produk
+                </a>
+                
+                <a href="{% url 'admin_social_list' %}" class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {% if request.resolver_match.url_name|slice:':12' == 'admin_social' %}bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400{% else %}text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700{% endif %}">
+                    <i class="fas fa-share-alt mr-3 text-lg"></i>
+                    Media Sosial
+                </a>
+                
+                <a href="{% url 'admin_whatsapp_list' %}" class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {% if request.resolver_match.url_name|slice:':15' == 'admin_whatsapp' %}bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400{% else %}text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700{% endif %}">
+                    <i class="fab fa-whatsapp mr-3 text-lg"></i>
+                    Template WhatsApp
+                </a>
+                
+                <a href="{% url 'admin_settings' %}" class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {% if request.resolver_match.url_name == 'admin_settings' %}bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400{% else %}text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700{% endif %}">
+                    <i class="fas fa-cog mr-3 text-lg"></i>
+                    Pengaturan
+                </a>
+            </div>
+            
+            <!-- Divider -->
+            <div class="border-t border-gray-200 dark:border-gray-700 my-6"></div>
+            
+            <!-- External Links -->
+            <div class="space-y-1">
+                <a href="{% url 'home' %}" target="_blank" class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i class="fas fa-external-link-alt mr-3 text-lg"></i>
+                    Lihat Website
+                </a>
+                
+                <a href="{% url 'admin_profile' %}" class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {% if request.resolver_match.url_name == 'admin_profile' %}bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400{% else %}text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700{% endif %}">
+                    <i class="fas fa-user mr-3 text-lg"></i>
+                    Profil
+                </a>
+            </div>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="lg:ml-64">
+        <!-- Top Header -->
+        <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-4 sm:px-6">
+            <div class="flex items-center justify-between">
+                <!-- Mobile menu button -->
+                <button id="mobile-menu-button" class="lg:hidden text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                
+                <!-- Page Title -->
+                <div class="flex-1 lg:flex-none">
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white lg:hidden">{% block page_title %}Admin Panel{% endblock %}</h1>
+                </div>
+                
+                <!-- Right side -->
+                <div class="flex items-center space-x-4">
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                        <i class="fas fa-sun text-yellow-500 dark:hidden"></i>
+                        <i class="fas fa-moon text-blue-400 hidden dark:block"></i>
+                    </button>
+                    
+                    <!-- User Menu -->
+                    <div class="relative">
+                        <button id="user-menu-button" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            {% if user.profile.photo %}
+                                <img src="{{ user.profile.photo.url }}" alt="{{ user.username }}" class="h-8 w-8 rounded-full object-cover">
+                            {% else %}
+                                <div class="h-8 w-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-white text-sm"></i>
+                                </div>
+                            {% endif %}
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:block">{{ user.first_name|default:user.username }}</span>
+                            <i class="fas fa-chevron-down text-xs text-gray-400"></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="user-menu" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hidden z-50">
+                            <div class="py-1">
+                                <a href="{% url 'admin_profile' %}" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-user mr-3"></i>
+                                    Profil
+                                </a>
+                                <a href="{% url 'admin_settings' %}" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-cog mr-3"></i>
+                                    Pengaturan
+                                </a>
+                                <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                                <a href="{% url 'admin_logout' %}" class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-sign-out-alt mr-3"></i>
+                                    Logout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Page Content -->
+        <main class="p-4 sm:p-6">
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 flex items-center space-x-3">
+            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <span class="text-gray-700 dark:text-gray-300">Loading...</span>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-4 right-4 z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-4 max-w-sm">
+            <div class="flex items-center space-x-3">
+                <div id="toast-icon" class="flex-shrink-0">
+                    <i class="fas fa-check-circle text-green-500"></i>
+                </div>
+                <div class="flex-1">
+                    <p id="toast-message" class="text-sm text-gray-700 dark:text-gray-300">Message</p>
+                </div>
+                <button onclick="hideToast()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Base JavaScript -->
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        
+        // Check for saved theme preference or default to dark
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        html.classList.toggle('dark', savedTheme === 'dark');
+        
+        // Function to update CKEditor theme
+        function updateCKEditorTheme(isDark) {
+            // Find all CKEditor instances
+            const editorElements = document.querySelectorAll('.ck-editor');
+            editorElements.forEach(editorElement => {
+                if (isDark) {
+                    // Editor content area
+                    editorElement.style.setProperty('--ck-color-base-background', '#374151');
+                    editorElement.style.setProperty('--ck-color-base-foreground', '#f9fafb');
+                    editorElement.style.setProperty('--ck-color-text', '#f9fafb');
+                    editorElement.style.setProperty('--ck-color-editor-base-text', '#f9fafb');
+                    editorElement.style.setProperty('--ck-color-focus-border', '#3b82f6');
+                    
+                    // Toolbar
+                    editorElement.style.setProperty('--ck-color-toolbar-background', '#1f2937');
+                    editorElement.style.setProperty('--ck-color-toolbar-border', '#374151');
+                    
+                    // UI elements
+                    editorElement.style.setProperty('--ck-color-base-border', '#4b5563');
+                    editorElement.style.setProperty('--ck-color-button-default-background', '#374151');
+                    editorElement.style.setProperty('--ck-color-button-default-hover-background', '#4b5563');
+                    editorElement.style.setProperty('--ck-color-button-on-background', '#4b5563');
+                    editorElement.style.setProperty('--ck-color-button-on-hover-background', '#6b7280');
+                    editorElement.style.setProperty('--ck-color-button-on-color', '#ffffff');
+                } else {
+                    // Editor content area
+                    editorElement.style.setProperty('--ck-color-base-background', '#ffffff');
+                    editorElement.style.setProperty('--ck-color-base-foreground', '#f3f3f3');
+                    editorElement.style.setProperty('--ck-color-text', '#333333');
+                    editorElement.style.setProperty('--ck-color-editor-base-text', '#333333');
+                    editorElement.style.setProperty('--ck-color-focus-border', '#3b82f6');
+                    
+                    // Toolbar
+                    editorElement.style.setProperty('--ck-color-toolbar-background', '#f9fafb');
+                    editorElement.style.setProperty('--ck-color-toolbar-border', '#e5e7eb');
+                    
+                    // UI elements
+                    editorElement.style.setProperty('--ck-color-base-border', '#d1d5db');
+                    editorElement.style.setProperty('--ck-color-button-default-background', '#f9fafb');
+                    editorElement.style.setProperty('--ck-color-button-default-hover-background', '#f3f4f6');
+                    editorElement.style.setProperty('--ck-color-button-on-background', '#e5e7eb');
+                    editorElement.style.setProperty('--ck-color-button-on-hover-background', '#d1d5db');
+                    editorElement.style.setProperty('--ck-color-button-on-color', '#111827');
+                }
+            });
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            
+            // Update CKEditor theme when theme changes
+            updateCKEditorTheme(isDark);
+        });
+        
+        // Apply theme to existing CKEditor instances on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCKEditorTheme(html.classList.contains('dark'));
+        });
+        
+        // Mobile menu functionality
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const closeSidebar = document.getElementById('close-sidebar');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobile-menu-overlay');
+        
+        function openMobileMenu() {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+        }
+        
+        function closeMobileMenu() {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        }
+        
+        mobileMenuButton.addEventListener('click', openMobileMenu);
+        closeSidebar.addEventListener('click', closeMobileMenu);
+        overlay.addEventListener('click', closeMobileMenu);
+        
+        // User menu functionality
+        const userMenuButton = document.getElementById('user-menu-button');
+        const userMenu = document.getElementById('user-menu');
+        
+        userMenuButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userMenu.classList.toggle('hidden');
+        });
+        
+        // Close user menu when clicking outside
+        document.addEventListener('click', () => {
+            userMenu.classList.add('hidden');
+        });
+        
+        // Prevent menu from closing when clicking inside
+        userMenu.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+        
+        // Loading overlay functions
+        function showLoading() {
+            document.getElementById('loading-overlay').classList.remove('hidden');
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.add('hidden');
+        }
+        
+        // Toast notification functions
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastIcon = document.getElementById('toast-icon');
+            const toastMessage = document.getElementById('toast-message');
+            
+            // Set icon based on type
+            if (type === 'success') {
+                toastIcon.innerHTML = '<i class="fas fa-check-circle text-green-500"></i>';
+            } else if (type === 'error') {
+                toastIcon.innerHTML = '<i class="fas fa-exclamation-circle text-red-500"></i>';
+            } else if (type === 'warning') {
+                toastIcon.innerHTML = '<i class="fas fa-exclamation-triangle text-yellow-500"></i>';
+            } else if (type === 'info') {
+                toastIcon.innerHTML = '<i class="fas fa-info-circle text-blue-500"></i>';
+            }
+            
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden');
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                hideToast();
+            }, 5000);
+        }
+        
+        function hideToast() {
+            document.getElementById('toast').classList.add('hidden');
+        }
+        
+        // CSRF Token helper
+        function getCSRFToken() {
+            const token = document.querySelector('[name=csrfmiddlewaretoken]');
+            return token ? token.value : '';
+        }
+        
+        // Modal management functions
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Prevent background scroll
+                
+                // Focus trap for accessibility
+                const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                if (focusableElements.length > 0) {
+                    focusableElements[0].focus();
+                }
+            }
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = ''; // Restore scroll
+            }
+        }
+        
+        // Close modal when clicking outside
+        function setupModalCloseOnOutsideClick(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closeModal(modalId);
+                    }
+                });
+                
+                // Close on Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                        closeModal(modalId);
+                    }
+                });
+            }
+        }
+        
+        // CKEditor utility functions
+        function initializeCKEditor(elementId, config = {}) {
+            const defaultConfig = {
+                toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'outdent', 'indent', '|', 'blockQuote', '|', 'undo', 'redo'],
+                heading: {
+                    options: [
+                        { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+                        { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
+                        { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
+                        { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
+                    ]
+                },
+                removePlugins: ['MediaEmbed'],
+                ...config
+            };
+            
+            return ClassicEditor
+                .create(document.querySelector(`#${elementId}`), defaultConfig)
+                .then(editor => {
+                    // Apply theme styles based on current mode
+                    const isDark = document.documentElement.classList.contains('dark');
+                    const editorElement = editor.ui.view.element;
+                    
+                    if (isDark) {
+                        // Editor content area
+                        editorElement.style.setProperty('--ck-color-base-background', '#374151');
+                        editorElement.style.setProperty('--ck-color-base-foreground', '#f9fafb');
+                        editorElement.style.setProperty('--ck-color-text', '#f9fafb');
+                        editorElement.style.setProperty('--ck-color-editor-base-text', '#f9fafb');
+                        editorElement.style.setProperty('--ck-color-focus-border', '#3b82f6');
+                        
+                        // Toolbar
+                        editorElement.style.setProperty('--ck-color-toolbar-background', '#1f2937');
+                        editorElement.style.setProperty('--ck-color-toolbar-border', '#374151');
+                        
+                        // UI elements
+                        editorElement.style.setProperty('--ck-color-base-border', '#4b5563');
+                        editorElement.style.setProperty('--ck-color-button-default-background', '#374151');
+                        editorElement.style.setProperty('--ck-color-button-default-hover-background', '#4b5563');
+                        editorElement.style.setProperty('--ck-color-button-on-background', '#4b5563');
+                        editorElement.style.setProperty('--ck-color-button-on-hover-background', '#6b7280');
+                        editorElement.style.setProperty('--ck-color-button-on-color', '#ffffff');
+                    } else {
+                        // Editor content area
+                        editorElement.style.setProperty('--ck-color-base-background', '#ffffff');
+                        editorElement.style.setProperty('--ck-color-base-foreground', '#f3f3f3');
+                        editorElement.style.setProperty('--ck-color-text', '#333333');
+                        editorElement.style.setProperty('--ck-color-editor-base-text', '#333333');
+                        editorElement.style.setProperty('--ck-color-focus-border', '#3b82f6');
+                        
+                        // Toolbar
+                        editorElement.style.setProperty('--ck-color-toolbar-background', '#f9fafb');
+                        editorElement.style.setProperty('--ck-color-toolbar-border', '#e5e7eb');
+                        
+                        // UI elements
+                        editorElement.style.setProperty('--ck-color-base-border', '#d1d5db');
+                        editorElement.style.setProperty('--ck-color-button-default-background', '#f9fafb');
+                        editorElement.style.setProperty('--ck-color-button-default-hover-background', '#f3f4f6');
+                        editorElement.style.setProperty('--ck-color-button-on-background', '#e5e7eb');
+                        editorElement.style.setProperty('--ck-color-button-on-hover-background', '#d1d5db');
+                        editorElement.style.setProperty('--ck-color-button-on-color', '#111827');
+                    }
+                    
+                    return editor;
+                })
+                .catch(error => {
+                    console.error('Error initializing CKEditor:', error);
+                    return null;
+                });
+        }
+        
+        // Form validation helper
+        function validateForm(formId) {
+            const form = document.getElementById(formId);
+            if (!form) return false;
+            
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('border-red-500');
+                    isValid = false;
+                } else {
+                    field.classList.remove('border-red-500');
+                }
+            });
+            
+            return isValid;
+        }
+        
+        // Image preview helper
+        function setupImagePreview(inputId, previewId) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+            
+            if (input && preview) {
+                input.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            preview.src = e.target.result;
+                            preview.parentElement.classList.remove('hidden');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        }
+        
+        // Toast notification helper
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+            
+            toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300`;
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'exclamation-triangle' : 'info'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+        
+        // Initialize modal close functionality for common modals
+        document.addEventListener('DOMContentLoaded', function() {
+            setupModalCloseOnOutsideClick('serviceModal');
+            setupModalCloseOnOutsideClick('productModal');
+            setupModalCloseOnOutsideClick('socialModal');
+            setupModalCloseOnOutsideClick('templateModal');
+            setupModalCloseOnOutsideClick('previewModal');
+            setupModalCloseOnOutsideClick('changePasswordModal');
+            
+            // Make modals responsive
+            const modals = document.querySelectorAll('[id$="Modal"]');
+            modals.forEach(modal => {
+                const modalContent = modal.querySelector('div > div');
+                if (modalContent) {
+                    modalContent.classList.add('mx-4', 'sm:mx-auto');
+                }
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

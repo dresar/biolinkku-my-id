@@ -1,0 +1,540 @@
+{% extends 'core/admin/base.html' %}
+
+{% block title %}Kelola Media Sosial{% endblock %}
+{% block page_title %}Kelola Media Sosial{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Kelola Media Sosial</h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Tambah, edit, dan kelola akun media sosial yang ditampilkan di bio link Anda.</p>
+        </div>
+        <div class="mt-4 sm:mt-0">
+            <button onclick="openAddModal()" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white text-sm font-medium rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                <i class="fas fa-plus mr-2"></i>
+                Tambah Media Sosial
+            </button>
+        </div>
+    </div>
+
+    <!-- Social Media Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {% for social in socials %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow">
+            <!-- Social Media Preview -->
+            <div class="p-6">
+                <div class="flex items-center space-x-4 mb-4">
+                    <div class="h-12 w-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white">
+                        <i class="{{ social.icon }} text-xl"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate">{{ social.get_platform_display }}</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 truncate">@{{ social.username }}</p>
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        {% if social.is_active %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                Aktif
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400">
+                                <i class="fas fa-times-circle mr-1"></i>
+                                Nonaktif
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if social.description %}
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">{{ social.description }}</p>
+                {% endif %}
+                
+                <!-- Link Preview -->
+                <div class="mb-4">
+                    <a href="{{ social.link }}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm truncate block">
+                        <i class="fas fa-external-link-alt mr-1"></i>
+                        {{ social.link|truncatechars:30 }}
+                    </a>
+                </div>
+                
+                <!-- Order Info -->
+                <div class="text-xs text-gray-500 dark:text-gray-400">
+                    Order: {{ social.order }}
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600">
+                <div class="flex items-center justify-between">
+                    <button onclick="previewSocial({{ social.id }})" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium">
+                        <i class="fas fa-eye mr-1"></i>
+                        Preview
+                    </button>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="editSocial({{ social.id }})" class="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteSocial({{ social.id }}, '{{ social.platform }}')" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full">
+            <div class="text-center py-12">
+                <i class="fas fa-share-alt text-4xl text-gray-400 mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Belum ada media sosial</h3>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">Mulai dengan menambahkan akun media sosial pertama Anda.</p>
+                <button onclick="openAddModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+                    <i class="fas fa-plus mr-2"></i>
+                    Tambah Media Sosial
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div id="socialModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 id="modalTitle" class="text-lg font-semibold text-gray-900 dark:text-white">Tambah Media Sosial</h3>
+            <button onclick="closeSocialModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <form id="socialForm" class="p-6 space-y-6">
+            {% csrf_token %}
+            <input type="hidden" id="socialId" name="id">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="platform" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-globe mr-2"></i>Platform *
+                    </label>
+                    <select id="platform" name="platform" required onchange="updateIcon()"
+                            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="">Pilih Platform</option>
+                        <option value="instagram" data-icon="fab fa-instagram">Instagram</option>
+                        <option value="tiktok" data-icon="fab fa-tiktok">TikTok</option>
+                        <option value="github" data-icon="fab fa-github">GitHub</option>
+                        <option value="saweria" data-icon="fas fa-heart">Saweria</option>
+                        <option value="email" data-icon="fas fa-envelope">Email</option>
+                        <option value="whatsapp" data-icon="fab fa-whatsapp">WhatsApp</option>
+                        <option value="facebook" data-icon="fab fa-facebook">Facebook</option>
+                        <option value="twitter" data-icon="fab fa-twitter">Twitter</option>
+                        <option value="linkedin" data-icon="fab fa-linkedin">LinkedIn</option>
+                        <option value="youtube" data-icon="fab fa-youtube">YouTube</option>
+                        <option value="telegram" data-icon="fab fa-telegram">Telegram</option>
+                        <option value="discord" data-icon="fab fa-discord">Discord</option>
+                        <option value="pinterest" data-icon="fab fa-pinterest">Pinterest</option>
+                        <option value="snapchat" data-icon="fab fa-snapchat">Snapchat</option>
+                        <option value="twitch" data-icon="fab fa-twitch">Twitch</option>
+                        <option value="reddit" data-icon="fab fa-reddit">Reddit</option>
+                        <option value="medium" data-icon="fab fa-medium">Medium</option>
+                        <option value="behance" data-icon="fab fa-behance">Behance</option>
+                        <option value="dribbble" data-icon="fab fa-dribbble">Dribbble</option>
+                        <option value="website" data-icon="fas fa-globe">Website</option>
+                        <option value="other" data-icon="fas fa-link">Other</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-user mr-2"></i>Username/Nama *
+                    </label>
+                    <input type="text" id="username" name="username" required
+                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                           placeholder="Masukkan username atau nama">
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label for="link" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-link mr-2"></i>Link/URL *
+                    </label>
+                    <input type="url" id="link" name="link" required
+                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                           placeholder="https://example.com/username">
+                </div>
+                
+                <div>
+                    <label for="icon" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-icons mr-2"></i>Icon Class *
+                    </label>
+                    <div class="relative">
+                        <input type="text" id="icon" name="icon" required
+                               class="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                               placeholder="fab fa-instagram">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <i id="iconPreview" class="text-gray-400 text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Font Awesome class (contoh: fab fa-instagram)</p>
+                </div>
+                
+                <div>
+                    <label for="order" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-sort-numeric-up mr-2"></i>Urutan
+                    </label>
+                    <input type="number" id="order" name="order" value="0" min="0"
+                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-align-left mr-2"></i>Deskripsi (Opsional)
+                    </label>
+                    <textarea id="description" name="description" rows="3"
+                              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                              placeholder="Deskripsi singkat tentang akun ini"></textarea>
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="is_active" name="is_active" checked
+                               class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700">
+                        <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-toggle-on mr-2"></i>Aktif
+                        </span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Preview Card -->
+            <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Preview:</h4>
+                <div id="previewCard" class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="h-10 w-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white">
+                            <i id="previewIcon" class="fas fa-link"></i>
+                        </div>
+                        <div>
+                            <div id="previewPlatform" class="font-medium text-gray-900 dark:text-white">Platform</div>
+                            <div id="previewUsername" class="text-sm text-gray-600 dark:text-gray-400">@username</div>
+                        </div>
+                    </div>
+                    <div id="previewDescription" class="mt-2 text-sm text-gray-600 dark:text-gray-400 hidden"></div>
+                </div>
+            </div>
+            
+            <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <button type="button" onclick="closeSocialModal()" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                    Batal
+                </button>
+                <button type="submit" class="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                    <i class="fas fa-save mr-2"></i>
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div id="previewModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Preview Media Sosial</h3>
+            <button onclick="closePreviewModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <div id="previewContent" class="p-6">
+            <!-- Preview content will be loaded here -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let isEditing = false;
+    let currentSocialId = null;
+    
+    function updateIcon() {
+        const platformSelect = document.getElementById('platform');
+        const iconInput = document.getElementById('icon');
+        const iconPreview = document.getElementById('iconPreview');
+        const previewIcon = document.getElementById('previewIcon');
+        
+        const selectedOption = platformSelect.options[platformSelect.selectedIndex];
+        const iconClass = selectedOption.getAttribute('data-icon');
+        
+        if (iconClass) {
+            iconInput.value = iconClass;
+            iconPreview.className = iconClass + ' text-gray-400 text-xl';
+            previewIcon.className = iconClass;
+        }
+        
+        updatePreview();
+    }
+    
+    function updatePreview() {
+        const platform = document.getElementById('platform');
+        const username = document.getElementById('username').value;
+        const description = document.getElementById('description').value;
+        const icon = document.getElementById('icon').value;
+        
+        const previewPlatform = document.getElementById('previewPlatform');
+        const previewUsername = document.getElementById('previewUsername');
+        const previewDescription = document.getElementById('previewDescription');
+        const previewIcon = document.getElementById('previewIcon');
+        
+        previewPlatform.textContent = platform.options[platform.selectedIndex].text || 'Platform';
+        previewUsername.textContent = username ? '@' + username : '@username';
+        
+        if (description) {
+            previewDescription.textContent = description;
+            previewDescription.classList.remove('hidden');
+        } else {
+            previewDescription.classList.add('hidden');
+        }
+        
+        if (icon) {
+            previewIcon.className = icon;
+        }
+    }
+    
+    function openAddModal() {
+        isEditing = false;
+        currentSocialId = null;
+        document.getElementById('modalTitle').textContent = 'Tambah Media Sosial';
+        document.getElementById('socialForm').reset();
+        document.getElementById('socialId').value = '';
+        document.getElementById('iconPreview').className = 'text-gray-400 text-xl';
+        updatePreview();
+        openModal('socialModal');
+    }
+    
+    function editSocial(id) {
+        isEditing = true;
+        currentSocialId = id;
+        document.getElementById('modalTitle').textContent = 'Edit Media Sosial';
+        
+        showLoading();
+        fetch(`/eka/social/${id}/`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                const social = data.data;
+                document.getElementById('socialId').value = social.id;
+                document.getElementById('platform').value = social.platform;
+                document.getElementById('username').value = social.username;
+                document.getElementById('link').value = social.link;
+                document.getElementById('icon').value = social.icon;
+                document.getElementById('description').value = social.description || '';
+                document.getElementById('order').value = social.order;
+                document.getElementById('is_active').checked = social.is_active;
+                
+                // Update icon preview
+                document.getElementById('iconPreview').className = social.icon + ' text-gray-400 text-xl';
+                
+                updatePreview();
+                openModal('socialModal');
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat memuat data media sosial.');
+        });
+    }
+    
+    function deleteSocial(id, platform) {
+        if (confirm(`Apakah Anda yakin ingin menghapus media sosial "${platform}"?`)) {
+            showLoading();
+            fetch(`/eka/social/delete/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menghapus media sosial.');
+            });
+        }
+    }
+    
+    function previewSocial(id) {
+        showLoading();
+        fetch(`/eka/social/preview/${id}/`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                const social = data.data;
+                document.getElementById('previewContent').innerHTML = `
+                    <div class="text-center space-y-4">
+                        <div class="inline-flex items-center justify-center h-16 w-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl text-white">
+                            <i class="${social.icon} text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold text-gray-900 dark:text-white">${social.platform}</h4>
+                            <p class="text-gray-600 dark:text-gray-400">@${social.username}</p>
+                        </div>
+                        ${social.description ? `<p class="text-sm text-gray-600 dark:text-gray-400">${social.description}</p>` : ''}
+                        <a href="${social.link}" target="_blank" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                            <i class="fas fa-external-link-alt mr-2"></i>
+                            Kunjungi
+                        </a>
+                    </div>
+                `;
+                openModal('previewModal');
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat memuat preview.');
+        });
+    }
+    
+    function closeSocialModal() {
+        closeModal('socialModal');
+    }
+    
+    function closePreviewModal() {
+        closeModal('previewModal');
+    }
+    
+    // Form submission
+    document.getElementById('socialForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validate required fields
+        const platform = document.getElementById('platform').value;
+        const username = document.getElementById('username').value.trim();
+        const link = document.getElementById('link').value.trim();
+        
+        if (!platform) {
+            showToast('Platform harus dipilih', 'error');
+            document.getElementById('platform').focus();
+            return;
+        }
+        
+        if (!username) {
+            showToast('Username harus diisi', 'error');
+            document.getElementById('username').focus();
+            return;
+        }
+        
+        if (!link) {
+            showToast('Link harus diisi', 'error');
+            document.getElementById('link').focus();
+            return;
+        }
+        
+        const formData = new FormData(this);
+        const url = isEditing ? `/eka/social/${currentSocialId}/` : '/eka/social/add/';
+        
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
+        
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCSRFToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Data berhasil disimpan!', 'success');
+                closeSocialModal();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                if (data.errors) {
+                    let errorMessage = 'Terdapat kesalahan pada form:\n';
+                    for (const field in data.errors) {
+                        errorMessage += `- ${data.errors[field].join(', ')}\n`;
+                    }
+                    showToast(errorMessage, 'error');
+                } else {
+                    showToast('Error: ' + (data.message || 'Terjadi kesalahan saat menyimpan data'), 'error');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Terjadi kesalahan saat menyimpan media sosial', 'error');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        });
+    });
+    
+    // Real-time preview updates
+    document.getElementById('username').addEventListener('input', updatePreview);
+    document.getElementById('description').addEventListener('input', updatePreview);
+    document.getElementById('icon').addEventListener('input', function() {
+        const iconPreview = document.getElementById('iconPreview');
+        const previewIcon = document.getElementById('previewIcon');
+        const iconClass = this.value;
+        
+        if (iconClass) {
+            iconPreview.className = iconClass + ' text-gray-400 text-xl';
+            previewIcon.className = iconClass;
+        }
+        
+        updatePreview();
+    });
+    
+    // Close modals when clicking outside
+    document.getElementById('socialModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeSocialModal();
+        }
+    });
+    
+    document.getElementById('previewModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closePreviewModal();
+        }
+    });
+    
+    // Initialize preview on page load
+    updatePreview();
+</script>
+{% endblock %}

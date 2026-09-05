@@ -1,0 +1,665 @@
+{% extends 'core/admin/base.html' %}
+
+{% block title %}Pengaturan{% endblock %}
+{% block page_title %}Pengaturan{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Pengaturan</h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Kelola pengaturan profil, website, dan SEO untuk bio link Anda.</p>
+        </div>
+        <div class="mt-4 sm:mt-0">
+            <button onclick="saveAllSettings()" class="inline-flex items-center px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white text-xs sm:text-sm font-medium rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 w-full sm:w-auto justify-center">
+                <i class="fas fa-save mr-1 sm:mr-2"></i>
+                <span class="hidden sm:inline">Simpan Semua</span>
+                <span class="sm:hidden">Simpan</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Settings Tabs -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <!-- Tab Navigation -->
+        <div class="border-b border-gray-200 dark:border-gray-700">
+            <nav class="flex space-x-2 sm:space-x-8 px-4 sm:px-6 overflow-x-auto" aria-label="Tabs">
+                <button onclick="switchTab('profile')" class="tab-button active py-4 px-1 border-b-2 border-blue-500 font-medium text-xs sm:text-sm text-blue-600 dark:text-blue-400">
+                    <i class="fas fa-user mr-1 sm:mr-2"></i>
+                    <span class="hidden sm:inline">Profil Admin</span>
+                    <span class="sm:hidden">Profil</span>
+                </button>
+                <button onclick="switchTab('site')" class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-xs sm:text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600">
+                    <i class="fas fa-globe mr-1 sm:mr-2"></i>
+                    <span class="hidden sm:inline">Pengaturan Website</span>
+                    <span class="sm:hidden">Website</span>
+                </button>
+                <button onclick="switchTab('seo')" class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-xs sm:text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600">
+                    <i class="fas fa-search mr-1 sm:mr-2"></i>
+                    <span class="hidden sm:inline">SEO & Meta</span>
+                    <span class="sm:hidden">SEO</span>
+                </button>
+                <button onclick="switchTab('footer')" class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-xs sm:text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600">
+                    <i class="fas fa-align-center mr-1 sm:mr-2"></i>
+                    <span class="hidden sm:inline">Footer</span>
+                    <span class="sm:hidden">Footer</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="p-6">
+            <!-- Profile Tab -->
+            <div id="profile-tab" class="tab-content">
+                <form id="profileForm" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Left Column -->
+                        <div class="space-y-6">
+                            <div>
+                                <label for="admin_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <i class="fas fa-user mr-2"></i>Nama Lengkap *
+                                </label>
+                                <input type="text" id="admin_name" name="admin_name" value="{{ site_settings.admin_name|default:'' }}" required
+                                       class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                       placeholder="Masukkan nama lengkap">
+                            </div>
+                            
+                            <div>
+                                <label for="admin_title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <i class="fas fa-briefcase mr-2"></i>Jabatan/Profesi
+                                </label>
+                                <input type="text" id="admin_title" name="admin_title" value="{{ site_settings.admin_title|default:'' }}"
+                                       class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                       placeholder="Contoh: Web Developer, Designer, dll">
+                            </div>
+                            
+                            <div>
+                                <label for="admin_whatsapp" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <i class="fab fa-whatsapp mr-2"></i>Nomor WhatsApp
+                                </label>
+                                <input type="text" id="admin_whatsapp" name="admin_whatsapp" value="{{ site_settings.admin_whatsapp|default:'' }}"
+                                       class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                       placeholder="628xxxxxxxxxx">
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Format: 628xxxxxxxxxx (tanpa tanda +)</p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <i class="fas fa-lock mr-2"></i>Keamanan
+                                </label>
+                                <button type="button" onclick="openPasswordModal()" class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg transition-colors text-left">
+                                    <i class="fas fa-key mr-2"></i>Ubah Password
+                                </button>
+                            </div>
+                            
+                            <div>
+                                <label for="admin_description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <i class="fas fa-align-left mr-2"></i>Deskripsi/Bio
+                                </label>
+                                <textarea id="admin_description" name="admin_description" rows="5"
+                                          class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                          placeholder="Ceritakan tentang diri Anda...">{{ site_settings.admin_description|default:'' }}</textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Column -->
+                        <div class="space-y-6">
+                            <div>
+                                <label for="admin_photo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <i class="fas fa-camera mr-2"></i>Foto Profil
+                                </label>
+                                <input type="file" id="admin_photo" name="admin_photo" accept="image/*"
+                                       class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                
+                                <!-- Current Photo Preview -->
+                                <div class="mt-4">
+                                    {% if site_settings.admin_photo %}
+                                        <div class="flex items-center space-x-4">
+                                            <img src="{{ site_settings.admin_photo.url }}" alt="Current Photo" class="h-20 w-20 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600">
+                                            <div>
+                                                <p class="text-sm text-gray-600 dark:text-gray-400">Foto saat ini</p>
+                                                <button type="button" onclick="removeCurrentPhoto()" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm">
+                                                    <i class="fas fa-trash mr-1"></i>Hapus foto
+                                                </button>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <div class="flex items-center justify-center h-20 w-20 bg-gray-200 dark:bg-gray-700 rounded-full">
+                                            <i class="fas fa-user text-gray-400 text-2xl"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- New Photo Preview -->
+                                <div id="photoPreview" class="mt-4 hidden">
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Preview foto baru:</p>
+                                    <img id="photoPreviewImg" src="" alt="Preview" class="h-20 w-20 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600">
+                                </div>
+                            </div>
+                            
+                            <!-- Profile Preview Card -->
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                    <i class="fas fa-eye mr-2"></i>Preview Profil:
+                                </h4>
+                                <div class="bg-white dark:bg-gray-800 rounded-lg p-4 text-center">
+                                    <div id="previewPhoto" class="mx-auto h-16 w-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white mb-3">
+                                        {% if site_settings.admin_photo %}
+                                            <img src="{{ site_settings.admin_photo.url }}" alt="Preview" class="h-16 w-16 rounded-full object-cover">
+                                        {% else %}
+                                            <i class="fas fa-user text-xl"></i>
+                                        {% endif %}
+                                    </div>
+                                    <h5 id="previewName" class="font-semibold text-gray-900 dark:text-white">{{ site_settings.admin_name|default:"Nama Admin" }}</h5>
+                                    <p id="previewTitle" class="text-sm text-gray-600 dark:text-gray-400">{{ site_settings.admin_title|default:"Jabatan" }}</p>
+                                    <p id="previewDescription" class="text-xs text-gray-500 dark:text-gray-400 mt-2">{{ site_settings.admin_description|default:"Deskripsi profil" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Site Tab -->
+            <div id="site-tab" class="tab-content hidden">
+                <form id="siteForm" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <label for="site_title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-heading mr-2"></i>Judul Website
+                            </label>
+                            <input type="text" id="site_title" name="site_title" value="{{ site_settings.site_title|default:'' }}"
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                   placeholder="Bio Link - Nama Anda">
+                        </div>
+                        
+                        <div>
+                            <label for="site_favicon" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-image mr-2"></i>Favicon Website
+                            </label>
+                            <input type="file" id="site_favicon" name="site_favicon" accept="image/*"
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            {% if site_settings.site_favicon %}
+                                <div class="mt-2 flex items-center space-x-2">
+                                    <img src="{{ site_settings.site_favicon.url }}" alt="Current Favicon" class="h-6 w-6">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">Favicon saat ini</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="lg:col-span-2">
+                            <label for="site_description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-align-left mr-2"></i>Deskripsi Website
+                            </label>
+                            <textarea id="site_description" name="site_description" rows="4"
+                                      class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                      placeholder="Deskripsi singkat tentang website Anda">{{ site_settings.site_description|default:'' }}</textarea>
+                        </div>
+                        
+                        <div class="lg:col-span-2">
+                            <label for="site_keywords" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-tags mr-2"></i>Keywords (Kata Kunci)
+                            </label>
+                            <input type="text" id="site_keywords" name="site_keywords" value="{{ site_settings.site_keywords|default:'' }}"
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                   placeholder="bio link, portfolio, layanan, produk">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Pisahkan dengan koma (,)</p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- SEO Tab -->
+            <div id="seo-tab" class="tab-content hidden">
+                <form id="seoForm" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <label for="meta_author" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-user-edit mr-2"></i>Meta Author
+                            </label>
+                            <input type="text" id="meta_author" name="meta_author" value="{{ site_settings.meta_author|default:'' }}"
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                   placeholder="Nama penulis/pemilik website">
+                        </div>
+                        
+                        <div>
+                            <label for="meta_robots" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-robot mr-2"></i>Meta Robots
+                            </label>
+                            <select id="meta_robots" name="meta_robots"
+                                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                <option value="index, follow" {% if site_settings.meta_robots == 'index, follow' %}selected{% endif %}>Index, Follow</option>
+                                <option value="index, nofollow" {% if site_settings.meta_robots == 'index, nofollow' %}selected{% endif %}>Index, No Follow</option>
+                                <option value="noindex, follow" {% if site_settings.meta_robots == 'noindex, follow' %}selected{% endif %}>No Index, Follow</option>
+                                <option value="noindex, nofollow" {% if site_settings.meta_robots == 'noindex, nofollow' %}selected{% endif %}>No Index, No Follow</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="og_title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fab fa-facebook mr-2"></i>Open Graph Title
+                            </label>
+                            <input type="text" id="og_title" name="og_title" value="{{ site_settings.og_title|default:'' }}"
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                   placeholder="Judul untuk media sosial">
+                        </div>
+                        
+                        <div>
+                            <label for="twitter_site" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fab fa-twitter mr-2"></i>Twitter Site
+                            </label>
+                            <input type="text" id="twitter_site" name="twitter_site" value="{{ site_settings.twitter_site|default:'' }}"
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                   placeholder="@username">
+                        </div>
+                        
+                        <div class="lg:col-span-2">
+                            <label for="og_description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-align-left mr-2"></i>Open Graph Description
+                            </label>
+                            <textarea id="og_description" name="og_description" rows="3"
+                                      class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                      placeholder="Deskripsi untuk media sosial">{{ site_settings.og_description|default:'' }}</textarea>
+                        </div>
+                        
+                        <div class="lg:col-span-2">
+                            <label for="og_image" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-image mr-2"></i>Open Graph Image
+                            </label>
+                            <input type="file" id="og_image" name="og_image" accept="image/*"
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Ukuran yang disarankan: 1200x630 pixels</p>
+                            {% if site_settings.og_image %}
+                                <div class="mt-2">
+                                    <img src="{{ site_settings.og_image.url }}" alt="Current OG Image" class="h-20 w-auto rounded border border-gray-200 dark:border-gray-600">
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Gambar OG saat ini</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer Tab -->
+            <div id="footer-tab" class="tab-content hidden">
+                <form id="footerForm" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label for="footer_text" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-align-center mr-2"></i>Teks Footer
+                            </label>
+                            <input type="text" id="footer_text" name="footer_text" value="{{ site_settings.footer_text|default:'' }}"
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                   placeholder="© 2024 Bio Link. All rights reserved.">
+                        </div>
+                        
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="footer_show_social" name="footer_show_social" {% if site_settings.footer_show_social %}checked{% endif %}
+                                       class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700">
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                                    <i class="fas fa-share-alt mr-2"></i>Tampilkan media sosial di footer
+                                </span>
+                            </label>
+                        </div>
+                        
+                        <!-- Footer Preview -->
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                            <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                <i class="fas fa-eye mr-2"></i>Preview Footer:
+                            </h4>
+                            <div class="bg-white dark:bg-gray-800 rounded-lg p-4 text-center border-t border-gray-200 dark:border-gray-600">
+                                <div id="footerPreviewSocial" class="flex justify-center space-x-4 mb-4 {% if not site_settings.footer_show_social %}hidden{% endif %}">
+                                    <a href="#" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                        <i class="fab fa-instagram text-xl"></i>
+                                    </a>
+                                    <a href="#" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                        <i class="fab fa-twitter text-xl"></i>
+                                    </a>
+                                    <a href="#" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                        <i class="fab fa-linkedin text-xl"></i>
+                                    </a>
+                                </div>
+                                <p id="footerPreviewText" class="text-sm text-gray-600 dark:text-gray-400">{{ site_settings.footer_text|default:"© 2024 Bio Link. All rights reserved." }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div id="changePasswordModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-md mx-4 sm:mx-auto">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    <i class="fas fa-key mr-2"></i>Ubah Password
+                </h3>
+                <button onclick="closePasswordModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="passwordForm" class="space-y-4">
+                {% csrf_token %}
+                
+                <div>
+                    <label for="current_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Password Saat Ini *
+                    </label>
+                    <input type="password" id="current_password" name="current_password" required
+                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                           placeholder="Masukkan password saat ini">
+                </div>
+                
+                <div>
+                    <label for="new_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Password Baru *
+                    </label>
+                    <input type="password" id="new_password" name="new_password" required
+                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                           placeholder="Masukkan password baru">
+                </div>
+                
+                <div>
+                    <label for="confirm_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Konfirmasi Password Baru *
+                    </label>
+                    <input type="password" id="confirm_password" name="confirm_password" required
+                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                           placeholder="Konfirmasi password baru">
+                </div>
+                
+                <div class="flex space-x-3 pt-4">
+                    <button type="button" onclick="closePasswordModal()" class="flex-1 px-4 py-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                        Ubah Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function switchTab(tabName) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+        
+        // Remove active class from all tab buttons
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.classList.remove('active', 'border-blue-500', 'text-blue-600', 'dark:text-blue-400');
+            button.classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+        });
+        
+        // Show selected tab content
+        document.getElementById(tabName + '-tab').classList.remove('hidden');
+        
+        // Add active class to selected tab button
+        event.target.classList.add('active', 'border-blue-500', 'text-blue-600', 'dark:text-blue-400');
+        event.target.classList.remove('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+    }
+    
+    function saveAllSettings() {
+        const forms = ['profileForm', 'siteForm', 'seoForm', 'footerForm'];
+        let allData = new FormData();
+        
+        // Collect data from all forms
+        forms.forEach(formId => {
+            const form = document.getElementById(formId);
+            if (form) {
+                const formData = new FormData(form);
+                
+                for (let [key, value] of formData.entries()) {
+                    allData.append(key, value);
+                }
+            }
+        });
+        
+        showLoading();
+        fetch('/eka/settings/update/', {
+            method: 'POST',
+            body: allData,
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                showToast('Pengaturan berhasil disimpan!', 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                if (data.errors) {
+                    let errorMessages = [];
+                    for (const [field, errors] of Object.entries(data.errors)) {
+                        errorMessages.push(`${field}: ${errors.join(', ')}`);
+                    }
+                    showToast('Terjadi kesalahan: ' + errorMessages.join(', '), 'error');
+                } else {
+                    showToast('Error: ' + (data.message || 'Terjadi kesalahan saat menyimpan'), 'error');
+                }
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            showToast('Terjadi kesalahan saat menyimpan pengaturan.', 'error');
+        });
+    }
+    
+    function removeCurrentPhoto() {
+        if (confirm('Apakah Anda yakin ingin menghapus foto profil?')) {
+            showLoading();
+            fetch('/eka/settings/remove-photo/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    showToast('Foto berhasil dihapus!', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast('Error: ' + (data.message || 'Terjadi kesalahan'), 'error');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Error:', error);
+                showToast('Terjadi kesalahan saat menghapus foto.', 'error');
+            });
+        }
+    }
+    
+    // Real-time preview updates
+    document.getElementById('admin_name').addEventListener('input', function() {
+        document.getElementById('previewName').textContent = this.value || 'Nama Admin';
+    });
+    
+    document.getElementById('admin_title').addEventListener('input', function() {
+        document.getElementById('previewTitle').textContent = this.value || 'Jabatan';
+    });
+    
+    document.getElementById('admin_description').addEventListener('input', function() {
+        document.getElementById('previewDescription').textContent = this.value || 'Deskripsi profil';
+    });
+    
+    document.getElementById('footer_text').addEventListener('input', function() {
+        document.getElementById('footerPreviewText').textContent = this.value || '© 2024 Bio Link. All rights reserved.';
+    });
+    
+    document.getElementById('footer_show_social').addEventListener('change', function() {
+        const socialPreview = document.getElementById('footerPreviewSocial');
+        if (this.checked) {
+            socialPreview.classList.remove('hidden');
+        } else {
+            socialPreview.classList.add('hidden');
+        }
+    });
+    
+    // Photo preview
+    document.getElementById('admin_photo').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('photoPreview').classList.remove('hidden');
+                document.getElementById('photoPreviewImg').src = e.target.result;
+                
+                // Update main preview
+                document.getElementById('previewPhoto').innerHTML = `<img src="${e.target.result}" alt="Preview" class="h-16 w-16 rounded-full object-cover">`;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            document.getElementById('photoPreview').classList.add('hidden');
+        }
+    });
+    
+    // Auto-save individual forms when fields change
+    function setupAutoSave(formId) {
+        const form = document.getElementById(formId);
+        const inputs = form.querySelectorAll('input, textarea, select');
+        
+        inputs.forEach(input => {
+            input.addEventListener('change', function() {
+                // Debounce auto-save
+                clearTimeout(this.autoSaveTimeout);
+                this.autoSaveTimeout = setTimeout(() => {
+                    const formData = new FormData(form);
+                    
+                    fetch('/eka/settings/update/', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': getCSRFToken(),
+                            'X-Requested-With': 'XMLHttpRequest',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Show subtle success indicator
+                            const indicator = document.createElement('div');
+                            indicator.className = 'fixed top-4 right-4 bg-green-500 text-white px-3 py-1 rounded text-sm z-50';
+                            indicator.textContent = 'Tersimpan';
+                            document.body.appendChild(indicator);
+                            
+                            setTimeout(() => {
+                                indicator.remove();
+                            }, 2000);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Auto-save error:', error);
+                    });
+                }, 1000);
+            });
+        });
+    }
+    
+    // Setup auto-save for all forms
+    ['profileForm', 'siteForm', 'seoForm', 'footerForm'].forEach(setupAutoSave);
+    
+    function openPasswordModal() {
+        openModal('changePasswordModal');
+    }
+    
+    function closePasswordModal() {
+        closeModal('changePasswordModal');
+        document.getElementById('passwordForm').reset();
+    }
+    
+    // Handle password change form submission
+    document.getElementById('passwordForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const newPassword = document.getElementById('new_password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        
+        if (newPassword !== confirmPassword) {
+            showToast('Password baru dan konfirmasi password tidak cocok!', 'error');
+            return;
+        }
+        
+        if (newPassword.length < 8) {
+            showToast('Password baru harus minimal 8 karakter!', 'error');
+            return;
+        }
+        
+        const formData = new FormData(this);
+        
+        showLoading();
+        fetch('/eka/change-password/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                showToast('Password berhasil diubah!', 'success');
+                closePasswordModal();
+            } else {
+                if (data.errors) {
+                    let errorMessages = [];
+                    for (const [field, errors] of Object.entries(data.errors)) {
+                        errorMessages.push(`${field}: ${errors.join(', ')}`);
+                    }
+                    showToast('Error: ' + errorMessages.join(', '), 'error');
+                } else {
+                    showToast('Error: ' + (data.message || 'Terjadi kesalahan'), 'error');
+                }
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            showToast('Terjadi kesalahan saat mengubah password.', 'error');
+        });
+    });
+    
+    // Close modal when clicking outside
+    document.getElementById('changePasswordModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closePasswordModal();
+        }
+    });
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !document.getElementById('changePasswordModal').classList.contains('hidden')) {
+            closePasswordModal();
+        }
+    });
+</script>
+{% endblock %}
